@@ -3,24 +3,25 @@ using UnityEngine;
 public class ItemSpawner : MonoBehaviour
 {
     [SerializeField] private bool onlyOneAtATime = true;
-
     [SerializeField] private GameObject prefab;
     [SerializeField] private Camera cam;
 
     [Header("Posición en pantalla (viewport 0-1)")]
     [SerializeField, Range(0f, 1f)] private float viewportX = 0.5f;
-    [SerializeField, Range(0f, 1f)] private float viewportY = 0.35f;
+    [SerializeField, Range(0f, 1f)] private float viewportY = 0.4f;
     [SerializeField] private float distance = 0.6f;
 
     [Header("Rotación")]
     [SerializeField] private Vector3 spawnEulerAngles = new Vector3(-90f, 0f, 0f);
     [SerializeField] private bool relativeToCameraYaw = false;
 
+    [Header("Tras lanzar")]
+    [SerializeField] private float respawnDelay = 1f; 
     [Header("Audio")]
     [SerializeField] private AudioClip spawnSfx;
     [SerializeField, Range(0f, 1f)] private float sfxVolume = 1f;
 
-    private static GameObject sharedCurrent; 
+    private static GameObject sharedCurrent;
     private GameObject ownCurrent;
 
     void Awake()
@@ -30,6 +31,8 @@ public class ItemSpawner : MonoBehaviour
 
     public void Spawn()
     {
+        CancelInvoke(nameof(Respawn));
+
         if (onlyOneAtATime)
         {
             if (sharedCurrent != null) Destroy(sharedCurrent);
@@ -49,7 +52,28 @@ public class ItemSpawner : MonoBehaviour
         ownCurrent = obj;
         sharedCurrent = obj;
 
+        if (obj.TryGetComponent(out ThrowableItem item))
+        {
+            item.Init(cam, new Vector2(viewportX, viewportY), distance);
+            item.Thrown += OnItemThrown;
+        }
+
         if (spawnSfx != null)
             AudioSource.PlayClipAtPoint(spawnSfx, pos, sfxVolume);
+    }
+
+    private void OnItemThrown(ThrowableItem item)
+    {
+        item.Thrown -= OnItemThrown;
+
+        if (ownCurrent == item.gameObject) ownCurrent = null;
+        if (sharedCurrent == item.gameObject) sharedCurrent = null;
+
+        if (respawnDelay > 0f) Invoke(nameof(Respawn), respawnDelay);
+    }
+
+    private void Respawn()
+    {
+        if (!onlyOneAtATime || sharedCurrent == null) Spawn();
     }
 }
