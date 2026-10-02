@@ -7,8 +7,6 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody))]
 public class ThrowableItem : MonoBehaviour
 {
-    public static Transform AimTarget;
-
     private enum State { Ready, Dragging, Thrown }
 
     [Header("Flotar delante de la cámara")]
@@ -22,25 +20,32 @@ public class ThrowableItem : MonoBehaviour
     [SerializeField] private float dragSmooth = 25f;
 
     [Header("Lanzamiento")]
-    [SerializeField] private float minFlick = 1.0f;   
+    [SerializeField] private float minFlick = 1.0f;  
     [SerializeField] private float maxFlick = 6f;     
     [SerializeField] private float minRange = 0.8f;  
     [SerializeField] private float maxRange = 3.5f; 
-    [SerializeField] private float powerCurve = 2f;   
-    [SerializeField, Range(10f, 70f)] private float loftAngle = 25f; 
-    [SerializeField] private float maxYaw = 35f;     
+    [SerializeField] private float powerCurve = 2f;
+    [SerializeField, Range(10f, 70f)] private float loftAngle = 25f;
+    [SerializeField] private float maxYaw = 35f;
     [SerializeField] private float spin = 6f;
+    [SerializeField] private float flickWindow = 0.12f; 
 
-    [Header("Ayuda de puntería")]
-    [SerializeField, Range(0f, 1f)] private float assistStrength = 0.4f;
-    [SerializeField] private float assistAngle = 25f;
-    [SerializeField] private float maxSpeedMargin = 1.2f; 
+    [Header("Tiro curvo")]
+    [SerializeField] private float curveWindow = 0.8f;     
+    [SerializeField] private float curveMinTurns = 0.5f;    
+    [SerializeField] private float curveFullTurns = 2f;    
+    [SerializeField] private float curveAcceleration = 2.5f;
+    [SerializeField, Range(0f, 1f)] private float aimCompensation = 1f;
+    [SerializeField] private float spinVisualSpeed = 720f;
+    [SerializeField] private Vector3 visualRotationAxis = Vector3.up;
+    [SerializeField] private bool invertCurve = false;      
 
     [Header("Vida")]
     [SerializeField] private float lifetimeAfterThrow = 6f;
     [SerializeField] private float lifetimeAfterHit = 2f;
 
     public UnityEvent<Collision> onHit;
+    public UnityEvent<float> onCurveThrow;
     public event Action<ThrowableItem> Thrown;
 
     private struct Sample { public Vector2 pos; public float t; }
@@ -55,6 +60,7 @@ public class ThrowableItem : MonoBehaviour
     private Vector2 fingerPos;
     private State state = State.Ready;
     private bool hit;
+    private Vector3 curveAccel;
 
     void Awake()
     {
@@ -64,6 +70,7 @@ public class ThrowableItem : MonoBehaviour
         baseScale = transform.localScale;
         transform.localScale = Vector3.zero;
     }
+
     public void Init(Camera camera, Vector2 viewportPos, float dist)
     {
         cam = camera;
@@ -87,6 +94,17 @@ public class ThrowableItem : MonoBehaviour
         {
             target = cam.ScreenToWorldPoint(new Vector3(fingerPos.x, fingerPos.y, distance));
             smooth = dragSmooth;
+
+            float c = ComputeCurve();
+
+            if (Mathf.Abs(c) > 0f && visualRotationAxis.sqrMagnitude > 0.001f)
+            {
+                transform.Rotate(
+                    visualRotationAxis.normalized,
+                    -Mathf.Sign(c) * Mathf.Abs(c) * spinVisualSpeed * Time.deltaTime,
+                    Space.World
+                );
+            }
         }
         else
         {
@@ -96,6 +114,12 @@ public class ThrowableItem : MonoBehaviour
         }
 
         transform.position = Vector3.Lerp(transform.position, target, 1f - Mathf.Exp(-smooth * Time.deltaTime));
+    }
+
+    void FixedUpdate()
+    {
+        if (state == State.Thrown && !hit && curveAccel != Vector3.zero)
+            rb.AddForce(curveAccel, ForceMode.Acceleration);
     }
 
     private void PopAnimation()
@@ -127,26 +151,54 @@ public class ThrowableItem : MonoBehaviour
 
         fingerPos = pos;
         samples.Add(new Sample { pos = pos, t = Time.unscaledTime });
-        while (samples.Count > 0 && Time.unscaledTime - samples[0].t > 0.12f)
+        while (samples.Count > 0 && Time.unscaledTime - samples[0].t > curveWindow)
             samples.RemoveAt(0);
 
         if (pointer.press.wasReleasedThisFrame || !pointer.press.isPressed)
             Release();
+    }
+    private float ComputeCurve()
+    {
+        if (samples.Count < 4) return 0f;
+
+        Vector2 center = Vector2.zero;
+        foreach (var s in samples) center += s.pos;
+        center /= samples.Count;
+
+        float minRadius = 0.02f * Screen.height; 
+        float total = 0f;
+
+        for (int i = 1; i < samples.Count; i++)
+        {
+            Vector2 a = samples[i - 1].pos - center;
+            Vector2 b = samples[i].pos - center;
+            if (a.magnitude < minRadius || b.magnitude < minRadius) continue;
+            total += Vector2.SignedAngle(a, b);
+        }
+
+        float turns = Mathf.Abs(total) / 360f;
+        if (turns < curveMinTurns) return 0f;
+
+        float t = Mathf.InverseLerp(curveMinTurns, curveFullTurns, turns);
+        float amount = Mathf.Lerp(0.25f, 1f, t);
+        return Mathf.Sign(total) * amount;
     }
 
     private void Release()
     {
         if (samples.Count < 2) { state = State.Ready; return; }
 
-        Sample a = samples[0];
         Sample b = samples[samples.Count - 1];
-        float dt = Mathf.Max(b.t - a.t, 0.016f);
+        int startIndex = samples.Count - 1;
+        while (startIndex > 0 && b.t - samples[startIndex - 1].t <= flickWindow) startIndex--;
+        Sample a = samples[startIndex];
 
+        float dt = Mathf.Max(b.t - a.t, 0.016f);
         Vector2 v = (b.pos - a.pos) / dt / Screen.height;
 
-        if (v.y < minFlick) { state = State.Ready; return; } 
+        if (v.y < minFlick) { state = State.Ready; return; }
 
-        Throw(v);
+        Throw(v, ComputeCurve());
     }
 
     private float SpeedForRange(float range)
@@ -156,7 +208,7 @@ public class ThrowableItem : MonoBehaviour
         return Mathf.Sqrt(range * g / Mathf.Max(s, 0.1f));
     }
 
-    private void Throw(Vector2 v)
+    private void Throw(Vector2 v, float curve)
     {
         float power = Mathf.InverseLerp(minFlick, maxFlick, v.y);
         power = Mathf.Pow(power, powerCurve);
@@ -172,18 +224,18 @@ public class ThrowableItem : MonoBehaviour
         dir = Quaternion.AngleAxis(-loftAngle, right) * dir;
 
         Vector3 velocity = dir * speed;
-        if (AimTarget != null && assistStrength > 0f)
-        {
-            Vector3 to = AimTarget.position - transform.position;
-            if (Vector3.Angle(dir, to) < assistAngle)
-            {
-                float t = Mathf.Clamp(to.magnitude / Mathf.Max(speed, 0.1f), 0.3f, 2f);
-                Vector3 assist = to / t - 0.5f * Physics.gravity * t;
-                velocity = Vector3.Lerp(velocity, assist, assistStrength);
 
-                float cap = SpeedForRange(maxRange) * maxSpeedMargin;
-                velocity = Vector3.ClampMagnitude(velocity, cap);
-            }
+        float sideSign = invertCurve ? 1f : -1f;
+        float lateral = sideSign * curve * curveAcceleration; 
+        curveAccel = right * lateral;
+
+        if (Mathf.Abs(curve) > 0f)
+        {
+
+            float g = Physics.gravity.magnitude;
+            float flightTime = 2f * speed * Mathf.Sin(loftAngle * Mathf.Deg2Rad) / g;
+            velocity += right * (-0.5f * lateral * flightTime * aimCompensation);
+            onCurveThrow?.Invoke(Mathf.Abs(curve));
         }
 
         state = State.Thrown;
@@ -192,7 +244,7 @@ public class ThrowableItem : MonoBehaviour
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         rb.AddForce(velocity, ForceMode.VelocityChange);
-        rb.AddTorque(right * -spin, ForceMode.VelocityChange); 
+        rb.AddTorque(right * -spin, ForceMode.VelocityChange);
 
         Thrown?.Invoke(this);
         Destroy(gameObject, lifetimeAfterThrow);
@@ -202,6 +254,7 @@ public class ThrowableItem : MonoBehaviour
     {
         if (state != State.Thrown || hit) return;
         hit = true;
+        curveAccel = Vector3.zero;
         onHit?.Invoke(c);
         Destroy(gameObject, lifetimeAfterHit);
     }

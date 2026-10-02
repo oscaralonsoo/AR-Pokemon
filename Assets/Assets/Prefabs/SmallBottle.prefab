@@ -312,15 +312,26 @@ MonoBehaviour:
   dragSmooth: 25
   minFlick: 0.6
   maxFlick: 4
-  minSpeed: 3
-  maxSpeed: 9
+  minRange: 0.8
+  maxRange: 3.5
+  powerCurve: 2
   loftAngle: 18
   maxYaw: 35
   spin: 12
-  assistStrength: 0.6
-  assistAngle: 25
+  flickWindow: 0.12
+  curveWindow: 0.8
+  curveMinTurns: 0.5
+  curveFullTurns: 2
+  curveAcceleration: 2.5
+  aimCompensation: 1
+  spinVisualSpeed: 720
+  visualRotationAxis: {x: 0.75, y: 0, z: 0}
+  invertCurve: 0
   lifetimeAfterThrow: 6
   lifetimeAfterHit: 2
   onHit:
+    m_PersistentCalls:
+      m_Calls: []
+  onCurveThrow:
     m_PersistentCalls:
       m_Calls: []
