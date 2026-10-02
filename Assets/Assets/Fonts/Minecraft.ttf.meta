@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: c56791757993d2545ac46333a95bf560
+guid: 0261a9f0b3b5bf543b6936e9b80eb0e4
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Pokemon Solid
+  - Minecraft
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0
