@@ -151,6 +151,10 @@ MonoBehaviour:
   bobAmount: 0.01
   bobSpeed: 2
   popDuration: 0.25
+  faceAxis: {x: 0, y: 1, z: 0}
+  rollOffset: 0
+  rotationSmooth: 15
+  spinReturnSpeed: 360
   grabRadius: 0.15
   dragSmooth: 25
   minFlick: 0.6
@@ -168,7 +172,7 @@ MonoBehaviour:
   curveAcceleration: 2.5
   aimCompensation: 1
   spinVisualSpeed: 720
-  visualRotationAxis: {x: 0.75, y: 0, z: 0}
+  invertSpinVisual: 0
   invertCurve: 0
   lifetimeAfterThrow: 6
   lifetimeAfterHit: 2

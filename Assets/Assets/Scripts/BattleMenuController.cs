@@ -2,17 +2,18 @@ using UnityEngine;
 
 public class BattleMenuController : MonoBehaviour
 {
-    public enum Menu { Main, Fight, Bag, Pokemon }
+    public enum Menu { BattlePanel, FightMenu, BagPanel, PokemonMenu }
 
     [System.Serializable]
     public class MenuGroups
     {
         public Menu menu;
-        public GroupAnimator[] groups; 
+        public GroupAnimator[] groups;
     }
 
     [SerializeField] private MenuGroups[] menus;
-    [SerializeField] private Menu current = Menu.Main;
+    [SerializeField] private Menu current = Menu.BattlePanel;
+    [SerializeField] private bool despawnItemsWhenLeavingBag = true;
 
     public void OpenMenu(int menuIndex) => Open((Menu)menuIndex);
 
@@ -20,12 +21,19 @@ public class BattleMenuController : MonoBehaviour
     {
         if (target == current) return;
 
+        if (despawnItemsWhenLeavingBag && current == Menu.BagPanel)
+            ItemSpawner.DespawnAll();
+
         SetMenu(current, false);
         SetMenu(target, true);
         current = target;
     }
 
-    public void Back() => Open(Menu.Main);
+    public void Back()
+    {
+        ItemSpawner.DespawnAll();
+        Open(Menu.BattlePanel);
+    }
 
     private void SetMenu(Menu menu, bool show)
     {

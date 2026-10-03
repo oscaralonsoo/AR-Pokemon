@@ -15,30 +15,49 @@ public class ThrowableItem : MonoBehaviour
     [SerializeField] private float bobSpeed = 2f;
     [SerializeField] private float popDuration = 0.25f;
 
+    [Header("Orientación hacia el usuario")]
+    [Tooltip("Eje LOCAL del modelo que debe apuntar hacia la cámara (la cara del botón).")]
+    [SerializeField] private Vector3 faceAxis = Vector3.up;
+    [Tooltip("Giro extra (grados) alrededor del eje de visión para colocar la bola recta.")]
+    [SerializeField] private float rollOffset = 0f;
+    [SerializeField] private float rotationSmooth = 15f;
+    [SerializeField] private float spinReturnSpeed = 360f;
+
     [Header("Agarre")]
-    [SerializeField, Range(0.05f, 0.4f)] private float grabRadius = 0.15f; 
+    [SerializeField, Range(0.05f, 0.4f)] private float grabRadius = 0.15f;
     [SerializeField] private float dragSmooth = 25f;
 
     [Header("Lanzamiento")]
-    [SerializeField] private float minFlick = 1.0f;  
-    [SerializeField] private float maxFlick = 6f;     
-    [SerializeField] private float minRange = 0.8f;  
-    [SerializeField] private float maxRange = 3.5f; 
+    [SerializeField] private float minFlick = 1.0f;
+    [SerializeField] private float maxFlick = 6f;
+    [SerializeField] private float minRange = 0.8f;
+    [SerializeField] private float maxRange = 3.5f;
     [SerializeField] private float powerCurve = 2f;
     [SerializeField, Range(10f, 70f)] private float loftAngle = 25f;
     [SerializeField] private float maxYaw = 35f;
     [SerializeField] private float spin = 6f;
-    [SerializeField] private float flickWindow = 0.12f; 
+    [SerializeField] private float flickWindow = 0.12f;
 
     [Header("Tiro curvo")]
-    [SerializeField] private float curveWindow = 0.8f;     
-    [SerializeField] private float curveMinTurns = 0.5f;    
-    [SerializeField] private float curveFullTurns = 2f;    
+    [SerializeField] private float curveWindow = 0.8f;
+    [SerializeField] private float curveMinTurns = 0.5f;
+    [SerializeField] private float curveFullTurns = 2f;
     [SerializeField] private float curveAcceleration = 2.5f;
     [SerializeField, Range(0f, 1f)] private float aimCompensation = 1f;
-    [SerializeField] private float spinVisualSpeed = 720f;
-    [SerializeField] private Vector3 visualRotationAxis = Vector3.up;
-    [SerializeField] private bool invertCurve = false;      
+    [SerializeField] private bool invertCurve = false;
+
+    [Header("Giro visual (estilo Pokémon GO)")]
+    [Tooltip("Velocidad de giro (°/s) con el círculo más suave.")]
+    [SerializeField] private float spinMinSpeed = 540f;
+    [Tooltip("Velocidad de giro (°/s) con el círculo más intenso.")]
+    [SerializeField] private float spinMaxSpeed = 1440f;
+    [Tooltip("Qué rápido acelera hacia la velocidad objetivo (mayor = más nervioso).")]
+    [SerializeField] private float spinAcceleration = 10f;
+    [Tooltip("Qué rápido frena al dejar de girar o soltar (menor = más inercia).")]
+    [SerializeField] private float spinDamping = 2.5f;
+    [Tooltip("Cuánto del giro se conserva en el aire al lanzar (0-1).")]
+    [SerializeField, Range(0f, 1f)] private float throwSpinCarry = 0.5f;
+    [SerializeField] private bool invertSpinVisual = false;
 
     [Header("Vida")]
     [SerializeField] private float lifetimeAfterThrow = 6f;
@@ -61,6 +80,11 @@ public class ThrowableItem : MonoBehaviour
     private State state = State.Ready;
     private bool hit;
     private Vector3 curveAccel;
+
+    private float spinAngle;
+    private float spinVelocity;
+    private Quaternion smoothCamRot;
+    private bool rotationInitialized;
 
     void Awake()
     {
@@ -96,24 +120,64 @@ public class ThrowableItem : MonoBehaviour
             smooth = dragSmooth;
 
             float c = ComputeCurve();
-
-            if (Mathf.Abs(c) > 0f && visualRotationAxis.sqrMagnitude > 0.001f)
+            float targetVel = 0f;
+            if (Mathf.Abs(c) > 0f)
             {
-                transform.Rotate(
-                    visualRotationAxis.normalized,
-                    -Mathf.Sign(c) * Mathf.Abs(c) * spinVisualSpeed * Time.deltaTime,
-                    Space.World
-                );
+                float dir = invertSpinVisual ? -1f : 1f;
+                float intensity = Mathf.InverseLerp(0.25f, 1f, Mathf.Abs(c));
+                targetVel = dir * Mathf.Sign(c) * Mathf.Lerp(spinMinSpeed, spinMaxSpeed, intensity);
             }
+
+            // Acelera con el gesto, frena con inercia al dejar de girar
+            float rate = Mathf.Abs(targetVel) > 0f ? spinAcceleration : spinDamping;
+            spinVelocity = Mathf.Lerp(spinVelocity, targetVel, 1f - Mathf.Exp(-rate * Time.deltaTime));
         }
         else
         {
             target = cam.ViewportToWorldPoint(new Vector3(viewport.x, viewport.y, distance))
                      + Vector3.up * (Mathf.Sin(Time.time * bobSpeed) * bobAmount);
             smooth = followSmooth;
+
+            // Al soltar sin lanzar sigue girando y frena poco a poco
+            spinVelocity = Mathf.Lerp(spinVelocity, 0f, 1f - Mathf.Exp(-spinDamping * Time.deltaTime));
+
+            if (Mathf.Abs(spinVelocity) < 20f)
+            {
+                spinVelocity = 0f;
+                spinAngle = Mathf.Repeat(spinAngle + 180f, 360f) - 180f;
+                spinAngle = Mathf.MoveTowards(spinAngle, 0f, spinReturnSpeed * Time.deltaTime);
+            }
         }
 
+        spinAngle += spinVelocity * Time.deltaTime;
+
+        UpdateRotation();
         transform.position = Vector3.Lerp(transform.position, target, 1f - Mathf.Exp(-smooth * Time.deltaTime));
+    }
+
+    private void UpdateRotation()
+    {
+        Vector3 axis = faceAxis.sqrMagnitude > 0.001f ? faceAxis.normalized : Vector3.up;
+
+        // faceAxis (local) -> apunta hacia la cámara (-Z en espacio de cámara)
+        Quaternion faceCam = Quaternion.FromToRotation(axis, Vector3.back);
+        Quaternion roll = Quaternion.AngleAxis(rollOffset, Vector3.forward);
+        Quaternion spinQ = Quaternion.AngleAxis(spinAngle, Vector3.forward);
+
+        // Solo se suaviza el seguimiento de la cámara; el giro se aplica directo
+        // para que sea rápido y sin retraso ni saltos.
+        if (!rotationInitialized)
+        {
+            smoothCamRot = cam.transform.rotation;
+            rotationInitialized = true;
+        }
+        else
+        {
+            smoothCamRot = Quaternion.Slerp(
+                smoothCamRot, cam.transform.rotation, 1f - Mathf.Exp(-rotationSmooth * Time.deltaTime));
+        }
+
+        transform.rotation = smoothCamRot * spinQ * roll * faceCam;
     }
 
     void FixedUpdate()
@@ -157,6 +221,7 @@ public class ThrowableItem : MonoBehaviour
         if (pointer.press.wasReleasedThisFrame || !pointer.press.isPressed)
             Release();
     }
+
     private float ComputeCurve()
     {
         if (samples.Count < 4) return 0f;
@@ -165,7 +230,7 @@ public class ThrowableItem : MonoBehaviour
         foreach (var s in samples) center += s.pos;
         center /= samples.Count;
 
-        float minRadius = 0.02f * Screen.height; 
+        float minRadius = 0.02f * Screen.height;
         float total = 0f;
 
         for (int i = 1; i < samples.Count; i++)
@@ -226,12 +291,11 @@ public class ThrowableItem : MonoBehaviour
         Vector3 velocity = dir * speed;
 
         float sideSign = invertCurve ? 1f : -1f;
-        float lateral = sideSign * curve * curveAcceleration; 
+        float lateral = sideSign * curve * curveAcceleration;
         curveAccel = right * lateral;
 
         if (Mathf.Abs(curve) > 0f)
         {
-
             float g = Physics.gravity.magnitude;
             float flightTime = 2f * speed * Mathf.Sin(loftAngle * Mathf.Deg2Rad) / g;
             velocity += right * (-0.5f * lateral * flightTime * aimCompensation);
@@ -243,8 +307,16 @@ public class ThrowableItem : MonoBehaviour
         rb.useGravity = true;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        rb.maxAngularVelocity = 50f; // por defecto Unity limita a 7 rad/s
         rb.AddForce(velocity, ForceMode.VelocityChange);
         rb.AddTorque(right * -spin, ForceMode.VelocityChange);
+
+        // Conserva parte del giro visual en el aire
+        if (Mathf.Abs(spinVelocity) > 1f)
+        {
+            Vector3 spinAxis = cam.transform.forward;
+            rb.AddTorque(spinAxis * (spinVelocity * Mathf.Deg2Rad * throwSpinCarry), ForceMode.VelocityChange);
+        }
 
         Thrown?.Invoke(this);
         Destroy(gameObject, lifetimeAfterThrow);

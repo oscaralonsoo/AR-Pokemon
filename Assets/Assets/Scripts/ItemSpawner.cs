@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ItemSpawner : MonoBehaviour
 {
+    [Tooltip("Si está activo, al spawnear reemplaza cualquier objeto de CUALQUIER spawner. Déjalo marcado en todos.")]
     [SerializeField] private bool onlyOneAtATime = true;
     [SerializeField] private GameObject prefab;
     [SerializeField] private Camera cam;
@@ -16,11 +18,12 @@ public class ItemSpawner : MonoBehaviour
     [SerializeField] private bool relativeToCameraYaw = false;
 
     [Header("Tras lanzar")]
-    [SerializeField] private float respawnDelay = 1f; 
+    [SerializeField] private float respawnDelay = 1f;
     [Header("Audio")]
     [SerializeField] private AudioClip spawnSfx;
     [SerializeField, Range(0f, 1f)] private float sfxVolume = 1f;
 
+    private static readonly List<ItemSpawner> all = new List<ItemSpawner>();
     private static GameObject sharedCurrent;
     private GameObject ownCurrent;
 
@@ -29,18 +32,34 @@ public class ItemSpawner : MonoBehaviour
         if (cam == null) cam = Camera.main;
     }
 
+    void OnEnable()
+    {
+        if (!all.Contains(this)) all.Add(this);
+    }
+
+    void OnDisable()
+    {
+        all.Remove(this);
+        CancelInvoke(nameof(Respawn));
+    }
+
     public void Spawn()
     {
         CancelInvoke(nameof(Respawn));
 
         if (onlyOneAtATime)
         {
+            foreach (var s in all)
+                if (s != this) s.CancelInvoke(nameof(Respawn));
+
             if (sharedCurrent != null) Destroy(sharedCurrent);
+            sharedCurrent = null;
         }
         else if (ownCurrent != null)
         {
             Destroy(ownCurrent);
         }
+        ownCurrent = null;
 
         Vector3 pos = cam.ViewportToWorldPoint(new Vector3(viewportX, viewportY, distance));
 
@@ -60,6 +79,27 @@ public class ItemSpawner : MonoBehaviour
 
         if (spawnSfx != null)
             AudioSource.PlayClipAtPoint(spawnSfx, pos, sfxVolume);
+    }
+
+    public void Despawn()
+    {
+        CancelInvoke(nameof(Respawn));
+
+        if (ownCurrent != null)
+        {
+            if (sharedCurrent == ownCurrent) sharedCurrent = null;
+            Destroy(ownCurrent);
+        }
+        ownCurrent = null;
+    }
+
+    public static void DespawnAll()
+    {
+        foreach (var s in all)
+            if (s != null) s.Despawn();
+
+        if (sharedCurrent != null) Destroy(sharedCurrent);
+        sharedCurrent = null;
     }
 
     private void OnItemThrown(ThrowableItem item)
