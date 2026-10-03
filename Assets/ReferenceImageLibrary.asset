@@ -24,9 +24,9 @@ MonoBehaviour:
       m_GuidLow: 15295521544503158421
       m_GuidHigh: 1620086818312499208
     m_Size: {x: 0.063, y: 0.08760219}
-    m_SpecifySize: 1
+    m_SpecifySize: 0
     m_Name: Charmander
-    m_Texture: {fileID: 0}
+    m_Texture: {fileID: 2800000, guid: 3a71e6959bced4440830cfae60b47b16, type: 3}
   - m_SerializedGuid:
       m_GuidLow: 5112850027758004317
       m_GuidHigh: 1711590464469428661
@@ -34,6 +34,6 @@ MonoBehaviour:
       m_GuidLow: 7260936245825673089
       m_GuidHigh: 6182447621829676649
     m_Size: {x: 0.063, y: 0.08794286}
-    m_SpecifySize: 1
+    m_SpecifySize: 0
     m_Name: Bellsprout
-    m_Texture: {fileID: 0}
+    m_Texture: {fileID: 2800000, guid: a5329781070b64c469ce9d255b77cc55, type: 3}
