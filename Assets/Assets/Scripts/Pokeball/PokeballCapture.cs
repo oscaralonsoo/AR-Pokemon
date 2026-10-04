@@ -7,8 +7,12 @@ using UnityEngine.Events;
 public class PokeballCapture : MonoBehaviour
 {
     [Header("Rebote")]
-    [Tooltip("Velocidad vertical (m/s) del rebote al tocar al pokémon. Más alto = más tiempo de efecto (tiempo en el aire = 2·v/g).")]
-    [SerializeField] private float bounceSpeed = 2.5f;
+    [Tooltip("Altura (m) que sube la bola tras tocar al pokémon.")]
+    [SerializeField] private float bounceHeight = 0.5f;
+    [Tooltip("Tiempo (s) que dura el rebote (subida + bajada). Es también la duración del rayo y del encogimiento del pokémon.")]
+    [SerializeField] private float bounceAirTime = 1.5f;
+    [Tooltip("Velocidad con la que la bola se gira hacia el jugador mientras sube y cae (mayor = más rápido). 0 = gira libre por la física.")]
+    [SerializeField] private float turnToPlayerSpeed = 10f;
 
     [Header("Rayo de captura")]
     [SerializeField] private Color beamColor = new Color(1f, 0.1f, 0.1f, 1f);
@@ -22,9 +26,15 @@ public class PokeballCapture : MonoBehaviour
     [SerializeField] private Vector3 uprightAxis = Vector3.forward;
     [Tooltip("Duración (s) del giro suave hasta quedar de pie.")]
     [SerializeField] private float uprightDuration = 0.25f;
+    [Tooltip("Pausa (s) entre quedar de pie y empezar la animación Catching.")]
+    [SerializeField] private float pauseBeforeAnimation = 0.4f;
     [Tooltip("Nombre del trigger del Animator que lanza la animación de captura.")]
     [SerializeField] private string catchTriggerName = "Catching";
-    [Tooltip("Desactivado: el ancla solo conserva el giro horizontal (el clip se mueve en ejes del mundo). Actívalo solo si tu clip está hecho respecto a la bola de pie.")]
+
+    [Header("Orientación de la animación")]
+    [Tooltip("El eje +Z del clip apunta al jugador. Si tu clip mira hacia el lado o hacia atrás, corrige aquí: prueba 90, -90 o 180.")]
+    [SerializeField] private float animationYawOffset = 0f;
+    [Tooltip("Activado: el ancla usa la pose de pie completa en vez de mirar al jugador. Normalmente déjalo desactivado.")]
     [SerializeField] private bool anchorUsesUprightRotation = false;
 
     [Header("Partículas de atrapado")]
@@ -38,7 +48,7 @@ public class PokeballCapture : MonoBehaviour
     [SerializeField] private float particlesLifetime = 3f;
 
     public UnityEvent onLanded;
-    public event Action Landed;       
+    public event Action Landed;     
     public event Action CatchStarted; 
 
     public bool IsCapturing => capturing;
@@ -52,26 +62,43 @@ public class PokeballCapture : MonoBehaviour
     private bool landed;
     private bool particlesPlayed;
     private float startTime;
+    private float captureGravity;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-         
+
         animator = GetComponentInChildren<Animator>(true);
         if (animator != null) animator.enabled = false;
+    }
+
+    void FixedUpdate()
+    {
+        if (!capturing || landed || rb.isKinematic) return;
+
+        rb.AddForce(Vector3.down * captureGravity, ForceMode.Acceleration);
+
+        if (turnToPlayerSpeed > 0f && cam != null)
+        {
+            rb.angularVelocity = Vector3.zero;
+            float k = 1f - Mathf.Exp(-turnToPlayerSpeed * Time.fixedDeltaTime);
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, ComputeUprightRotation(), k));
+        }
     }
 
     void OnDestroy()
     {
         if (anchor != null) Destroy(anchor.gameObject);
     }
-
     public bool TryStart(Pokemon pokemon, Camera camera, Vector3 ballFaceAxis)
     {
         if (capturing) return false;
 
-        float g = Physics.gravity.magnitude;
-        float airTime = 2f * bounceSpeed / Mathf.Max(g, 0.01f);
+        float airTime = Mathf.Max(0.2f, bounceAirTime);
+        float height = Mathf.Max(0.05f, bounceHeight);
+
+        captureGravity = 8f * height / (airTime * airTime);
+        float upSpeed = 4f * height / airTime;
 
         if (!pokemon.Capture(airTime, transform)) return false;
 
@@ -80,7 +107,8 @@ public class PokeballCapture : MonoBehaviour
         capturing = true;
         startTime = Time.time;
 
-        SetVelocity(Vector3.up * bounceSpeed);
+        rb.useGravity = false;
+        SetVelocity(Vector3.up * upSpeed);
         SpawnBeam(pokemon, airTime);
         return true;
     }
@@ -126,14 +154,12 @@ public class PokeballCapture : MonoBehaviour
         }
         transform.rotation = to;
 
-
-        Quaternion anchorRot = anchorUsesUprightRotation
-            ? to
-            : Quaternion.Euler(0f, to.eulerAngles.y, 0f);
+        if (pauseBeforeAnimation > 0f)
+            yield return new WaitForSeconds(pauseBeforeAnimation);
 
         anchor = new GameObject("CatchAnchor").transform;
-        anchor.SetPositionAndRotation(transform.position, anchorRot);
-        transform.SetParent(anchor, true);
+        anchor.SetPositionAndRotation(transform.position, ComputeAnchorRotation(to));
+        transform.SetParent(anchor, true); 
 
         if (animator != null)
         {
@@ -150,6 +176,23 @@ public class PokeballCapture : MonoBehaviour
             yield return new WaitForSeconds(particlesTime);
             PlayCaptureParticles();
         }
+    }
+
+    private Quaternion ComputeAnchorRotation(Quaternion uprightRot)
+    {
+        if (anchorUsesUprightRotation) return uprightRot;
+
+        Vector3 toPlayer = Vector3.zero;
+        if (cam != null)
+        {
+            toPlayer = Vector3.ProjectOnPlane(cam.transform.position - transform.position, Vector3.up);
+            if (toPlayer.sqrMagnitude < 0.0001f)
+                toPlayer = Vector3.ProjectOnPlane(-cam.transform.forward, Vector3.up);
+        }
+        if (toPlayer.sqrMagnitude < 0.0001f) return Quaternion.identity;
+
+        return Quaternion.LookRotation(toPlayer.normalized, Vector3.up)
+               * Quaternion.Euler(0f, animationYawOffset, 0f);
     }
 
     public void PlayCaptureParticles()

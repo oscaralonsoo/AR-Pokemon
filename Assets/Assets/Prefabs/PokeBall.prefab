@@ -238,13 +238,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faf4eb986553aac4d94108dca838d823, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PokeballCapture
-  bounceSpeed: 4
+  bounceHeight: 0.5
+  bounceAirTime: 1
+  turnToPlayerSpeed: 15
   beamColor: {r: 1, g: 0.1, b: 0.1, a: 1}
   beamWidth: 0.04
   beamMaterial: {fileID: 0}
   uprightAxis: {x: 0, y: 0, z: 0}
   uprightDuration: 0.3
+  pauseBeforeAnimation: 0.5
   catchTriggerName: Catching
+  animationYawOffset: 0
   anchorUsesUprightRotation: 0
   captureParticlesPrefab: {fileID: 7394284628596010883, guid: c00b6c4d90358ad48932e5d83c8f5f3c, type: 3}
   particlesTime: 3.83
