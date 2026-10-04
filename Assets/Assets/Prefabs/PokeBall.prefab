@@ -81,6 +81,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 96e5da24b5ffe6a4e96d3d02ee0d4144, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9181192818772640899}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 96e5da24b5ffe6a4e96d3d02ee0d4144, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1580336602641149322}
   m_SourcePrefab: {fileID: 100100000, guid: 96e5da24b5ffe6a4e96d3d02ee0d4144, type: 3}
 --- !u!1 &4702327258279652790 stripped
 GameObject:
@@ -171,9 +174,13 @@ MonoBehaviour:
   curveFullTurns: 1.5
   curveAcceleration: 2.5
   aimCompensation: 1
-  spinVisualSpeed: 720
-  invertSpinVisual: 0
   invertCurve: 0
+  spinMinSpeed: 540
+  spinMaxSpeed: 1440
+  spinAcceleration: 10
+  spinDamping: 2.5
+  throwSpinCarry: 0.5
+  invertSpinVisual: 0
   lifetimeAfterThrow: 6
   lifetimeAfterHit: 2
   onHit:
@@ -182,3 +189,25 @@ MonoBehaviour:
   onCurveThrow:
     m_PersistentCalls:
       m_Calls: []
+--- !u!95 &1580336602641149322
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4702327258279652790}
+  m_Enabled: 0
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 0b7350296ef744d4f878309fe4473d0c, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
