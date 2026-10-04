@@ -84,6 +84,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 96e5da24b5ffe6a4e96d3d02ee0d4144, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1580336602641149322}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 96e5da24b5ffe6a4e96d3d02ee0d4144, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3031521780444378674}
   m_SourcePrefab: {fileID: 100100000, guid: 96e5da24b5ffe6a4e96d3d02ee0d4144, type: 3}
 --- !u!1 &4702327258279652790 stripped
 GameObject:
@@ -150,43 +153,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c628d33b3ebbd9438b8ae09254be361, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  followSmooth: 12
-  bobAmount: 0.01
-  bobSpeed: 2
-  popDuration: 0.25
-  faceAxis: {x: 0, y: 1, z: 0}
-  rollOffset: 0
-  rotationSmooth: 15
-  spinReturnSpeed: 360
+  itemType: 0
+  potionHealAmount: 20
   grabRadius: 0.15
-  dragSmooth: 25
-  minFlick: 0.6
-  maxFlick: 4
-  minRange: 0.8
-  maxRange: 3.5
-  powerCurve: 6
-  loftAngle: 18
-  maxYaw: 50
-  spin: 12
-  flickWindow: 0.12
-  curveWindow: 0.8
-  curveMinTurns: 0.35
-  curveFullTurns: 1.5
-  curveAcceleration: 2.5
-  aimCompensation: 1
-  invertCurve: 0
-  spinMinSpeed: 540
-  spinMaxSpeed: 1440
-  spinAcceleration: 10
-  spinDamping: 2.5
-  throwSpinCarry: 0.5
-  invertSpinVisual: 0
+  gesture:
+    flickWindow: 0.12
+    curveWindow: 0.8
+    curveMinTurns: 0.5
+    curveFullTurns: 2
+  ballistics:
+    minFlick: 1
+    maxFlick: 6
+    minRange: 0.8
+    maxRange: 3.5
+    powerCurve: 2
+    loftAngle: 25
+    maxYaw: 35
+    spin: 6
+    curveAcceleration: 2.5
+    aimCompensation: 1
+    invertCurve: 0
+  visuals:
+    followSmooth: 12
+    dragSmooth: 25
+    bobAmount: 0.01
+    bobSpeed: 2
+    popDuration: 0.25
+    faceAxis: {x: 0, y: 1, z: 0}
+    rollOffset: 0
+    rotationSmooth: 15
+    spinReturnSpeed: 360
+    spinMinSpeed: 540
+    spinMaxSpeed: 1440
+    spinAcceleration: 10
+    spinDamping: 2.5
+    throwSpinCarry: 0.5
+    invertSpinVisual: 0
   lifetimeAfterThrow: 6
   lifetimeAfterHit: 2
+  lifetimeAfterPokemonHit: 0.15
+  captureTimeout: 5
+  catchAnimationDuration: 4.25
+  destroyAfterCatch: 1
   onHit:
     m_PersistentCalls:
       m_Calls: []
   onCurveThrow:
+    m_PersistentCalls:
+      m_Calls: []
+  onPokemonHit:
     m_PersistentCalls:
       m_Calls: []
 --- !u!95 &1580336602641149322
@@ -211,3 +226,30 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &3031521780444378674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4702327258279652790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faf4eb986553aac4d94108dca838d823, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PokeballCapture
+  bounceSpeed: 4
+  beamColor: {r: 1, g: 0.1, b: 0.1, a: 1}
+  beamWidth: 0.04
+  beamMaterial: {fileID: 0}
+  uprightAxis: {x: 0, y: 0, z: 0}
+  uprightDuration: 0.3
+  catchTriggerName: Catching
+  anchorUsesUprightRotation: 0
+  captureParticlesPrefab: {fileID: 7394284628596010883, guid: c00b6c4d90358ad48932e5d83c8f5f3c, type: 3}
+  particlesTime: 3.83
+  playParticlesByTime: 1
+  particlesLifetime: 3
+  onLanded:
+    m_PersistentCalls:
+      m_Calls: []

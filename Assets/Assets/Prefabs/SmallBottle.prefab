@@ -304,10 +304,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c628d33b3ebbd9438b8ae09254be361, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThrowablePokeball
+  itemType: 1
+  potionHealAmount: 20
   followSmooth: 12
   bobAmount: 0.01
   bobSpeed: 2
   popDuration: 0.25
+  faceAxis: {x: 0, y: 1, z: 0}
+  rollOffset: 0
+  rotationSmooth: 15
+  spinReturnSpeed: 360
   grabRadius: 0.15
   dragSmooth: 25
   minFlick: 0.6
@@ -324,14 +330,22 @@ MonoBehaviour:
   curveFullTurns: 2
   curveAcceleration: 2.5
   aimCompensation: 1
-  spinVisualSpeed: 720
-  visualRotationAxis: {x: 0.75, y: 0, z: 0}
   invertCurve: 0
+  spinMinSpeed: 540
+  spinMaxSpeed: 1440
+  spinAcceleration: 10
+  spinDamping: 2.5
+  throwSpinCarry: 0.5
+  invertSpinVisual: 0
   lifetimeAfterThrow: 6
   lifetimeAfterHit: 2
+  lifetimeAfterPokemonHit: 0.15
   onHit:
     m_PersistentCalls:
       m_Calls: []
   onCurveThrow:
+    m_PersistentCalls:
+      m_Calls: []
+  onPokemonHit:
     m_PersistentCalls:
       m_Calls: []
