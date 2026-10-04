@@ -1,0 +1,46 @@
+{
+  "pokemon": [
+    {
+      "name": "Charmander",
+      "type": "Fire",
+      "hp": 80,
+      "stage": "Basic",
+
+      "attacks": [
+        {
+          "name": "Fire Claws",
+          "cost": ["Fire"],
+          "damage": 30
+        }
+      ],
+
+      "weakness": {
+        "type": "Water",
+        "value": "×2"
+      },
+
+      "resistance": null,
+      "retreatCost": 1
+    },
+
+    {
+      "name": "Bellsprout",
+      "type": "Plant",
+      "hp": 60,
+      "stage": "Basic",
+      "attacks": [
+        {
+          "name": "Vine Slap",
+          "cost": ["Plant"],
+          "damage": 20
+        }
+      ],
+      "weakness": {
+        "type": "Fire",
+        "value": "×2"
+      },
+      "resistance": null,
+      "retreatCost": 1
+    }
+  ]
+}
