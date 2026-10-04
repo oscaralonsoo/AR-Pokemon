@@ -38,8 +38,8 @@ public class PokeballCapture : MonoBehaviour
     [SerializeField] private float particlesLifetime = 3f;
 
     public UnityEvent onLanded;
-    public event Action Landed;       // tocó el suelo
-    public event Action CatchStarted; // ya de pie y con la animación lanzada
+    public event Action Landed;       
+    public event Action CatchStarted; 
 
     public bool IsCapturing => capturing;
 
@@ -56,8 +56,7 @@ public class PokeballCapture : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-
-        // El Animator se mantiene apagado hasta la captura para que no pise la rotación
+         
         animator = GetComponentInChildren<Animator>(true);
         if (animator != null) animator.enabled = false;
     }
@@ -67,12 +66,10 @@ public class PokeballCapture : MonoBehaviour
         if (anchor != null) Destroy(anchor.gameObject);
     }
 
-    /// <summary>Inicia la captura: rebota, lanza el rayo rojo y el pokémon se pone rojo y es absorbido.</summary>
     public bool TryStart(Pokemon pokemon, Camera camera, Vector3 ballFaceAxis)
     {
         if (capturing) return false;
 
-        // Tiempo aproximado que la bola pasa en el aire (subida + bajada)
         float g = Physics.gravity.magnitude;
         float airTime = 2f * bounceSpeed / Mathf.Max(g, 0.01f);
 
@@ -95,12 +92,11 @@ public class PokeballCapture : MonoBehaviour
         go.AddComponent<CaptureBeam>().Play(transform, pokemon, duration, beamColor, beamWidth, beamMaterial);
     }
 
-    /// <summary>Devuelve true si la colisión ha sido consumida por la captura.</summary>
     public bool HandleCollision(Collision c)
     {
         if (!capturing) return false;
         if (landed) return true;
-        if (Time.time - startTime < 0.1f) return true; // ignora el contacto inicial
+        if (Time.time - startTime < 0.1f) return true; 
         if (c.collider.GetComponentInParent<Pokemon>() != null) return true;
 
         landed = true;
@@ -110,7 +106,6 @@ public class PokeballCapture : MonoBehaviour
         return true;
     }
 
-    // Ya en el suelo: congela la física, se endereza y lanza la animación
     private IEnumerator LandAndCatchRoutine()
     {
         SetVelocity(Vector3.zero);
@@ -131,22 +126,20 @@ public class PokeballCapture : MonoBehaviour
         }
         transform.rotation = to;
 
-        // Ancla en el punto de aterrizaje: las claves de posición del clip pasan a ser
-        // relativas a este punto. Solo conserva el giro horizontal para que "arriba"
-        // en el clip siga siendo arriba en el mundo.
+
         Quaternion anchorRot = anchorUsesUprightRotation
             ? to
             : Quaternion.Euler(0f, to.eulerAngles.y, 0f);
 
         anchor = new GameObject("CatchAnchor").transform;
         anchor.SetPositionAndRotation(transform.position, anchorRot);
-        transform.SetParent(anchor, true); // mantiene la pose de pie de la bola
+        transform.SetParent(anchor, true);
 
         if (animator != null)
         {
             animator.applyRootMotion = false;
             animator.enabled = true;
-            yield return null; // deja que el Animator se inicialice antes del trigger
+            yield return null; 
             animator.SetTrigger(Animator.StringToHash(catchTriggerName));
         }
 
@@ -159,10 +152,6 @@ public class PokeballCapture : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Lanza las partículas de atrapado. Se llama sola por tiempo, o puedes llamarla
-    /// desde un Animation Event del clip (el script debe estar en el mismo objeto que el Animator).
-    /// </summary>
     public void PlayCaptureParticles()
     {
         if (particlesPlayed) return;
@@ -184,7 +173,6 @@ public class PokeballCapture : MonoBehaviour
         Destroy(go, particlesLifetime);
     }
 
-    // Ráfaga de chispas por defecto (tamaños en metros: ajusta si tu escena AR es muy distinta)
     private GameObject CreateDefaultBurst(Vector3 pos)
     {
         var go = new GameObject("CaptureParticles");
@@ -227,7 +215,6 @@ public class PokeballCapture : MonoBehaviour
         return go;
     }
 
-    // De pie: uprightAxis (local) apunta al cielo y el botón (faceAxis) mira hacia la cámara en horizontal
     private Quaternion ComputeUprightRotation()
     {
         Vector3 up = uprightAxis.sqrMagnitude > 0.001f ? uprightAxis.normalized : Vector3.forward;

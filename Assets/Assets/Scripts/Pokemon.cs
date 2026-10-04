@@ -28,7 +28,6 @@ public class Pokemon : MonoBehaviour
     public int CurrentHP => currentHP;
     public int MaxHP => maxHP;
 
-    /// <summary>Centro visual del pokémon en el mundo (para apuntar el rayo).</summary>
     public Vector3 CenterWorld
     {
         get
@@ -75,7 +74,7 @@ public class Pokemon : MonoBehaviour
         onHealed?.Invoke(currentHP - before);
     }
 
-    /// <summary>Inicia la captura: se pone rojo y se encoge (y es absorbido hacia sinkTarget) durante duration.</summary>
+  
     public bool Capture(float duration, Transform sinkTarget = null)
     {
         if (IsCaptured || IsBeingCaptured) return false;
@@ -94,7 +93,6 @@ public class Pokemon : MonoBehaviour
 
         PrepareRed();
 
-        // Fase 1: se pone rojo
         float t = 0f;
         while (t < 1f)
         {
@@ -104,7 +102,6 @@ public class Pokemon : MonoBehaviour
         }
         ApplyRed(1f);
 
-        // Fase 2: se encoge y es absorbido por la pokeball
         Vector3 startScale = transform.localScale;
         Vector3 startPos = transform.position;
         t = 0f;
@@ -128,15 +125,12 @@ public class Pokemon : MonoBehaviour
         onCaptured?.Invoke();
     }
 
-    // ───────────── Rojo ─────────────
-
     private void PrepareRed()
     {
         tints.Clear();
 
         if (redMaterial != null)
         {
-            // Silueta roja plana: sustituye todos los materiales
             foreach (var r in renderers)
             {
                 if (r == null || r is ParticleSystemRenderer) continue;
@@ -147,7 +141,6 @@ public class Pokemon : MonoBehaviour
             return;
         }
 
-        // Teñir: instancias de los materiales y se interpola su color
         foreach (var r in renderers)
         {
             if (r == null || r is ParticleSystemRenderer) continue;
@@ -180,8 +173,6 @@ public class Pokemon : MonoBehaviour
         }
     }
 
-    // El tracking manager puede reactivar el objeto con SetActive(true),
-    // así que mantenemos los renderers apagados mientras esté capturado.
     void LateUpdate()
     {
         if (IsCaptured) HideVisuals();

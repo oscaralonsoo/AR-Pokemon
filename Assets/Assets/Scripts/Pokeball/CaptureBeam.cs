@@ -37,7 +37,6 @@ public class CaptureBeam : MonoBehaviour
         {
             t += Time.deltaTime;
 
-            // Entra rápido y se apaga al final
             float env = Mathf.Clamp01(t / 0.12f) * Mathf.Clamp01((duration - t) / 0.2f);
 
             lr.widthMultiplier = width * env;
@@ -53,7 +52,6 @@ public class CaptureBeam : MonoBehaviour
             {
                 float f = i / (float)(Points - 1);
                 Vector3 p = Vector3.Lerp(a, b, f);
-                // Chisporroteo: nulo en los extremos, máximo en el centro
                 if (i > 0 && i < Points - 1)
                     p += Random.insideUnitSphere * (jitter * Mathf.Sin(f * Mathf.PI));
                 lr.SetPosition(i, p);
