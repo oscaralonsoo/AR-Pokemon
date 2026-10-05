@@ -8,17 +8,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -8862792435229307136, guid: fd3a7ca39642e8d4d87a22b04a2ae716, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: -876546973899608171, guid: 9d30736d815a4cb4aba05bd2149fad90, type: 3}
     - target: {fileID: -8679921383154817045, guid: fd3a7ca39642e8d4d87a22b04a2ae716, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -17.30559
+      value: 494.59912
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd3a7ca39642e8d4d87a22b04a2ae716, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.000000034984595
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd3a7ca39642e8d4d87a22b04a2ae716, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -6.9
+      value: -2760.868
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd3a7ca39642e8d4d87a22b04a2ae716, type: 3}
       propertyPath: m_LocalRotation.w
@@ -50,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: fd3a7ca39642e8d4d87a22b04a2ae716, type: 3}
       propertyPath: m_Name
-      value: Jolteon
+      value: Jolteon_Prefab
       objectReference: {fileID: 0}
     - target: {fileID: 3133978200661918090, guid: fd3a7ca39642e8d4d87a22b04a2ae716, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
