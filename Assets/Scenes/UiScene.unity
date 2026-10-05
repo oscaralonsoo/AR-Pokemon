@@ -292,6 +292,33 @@ MonoBehaviour:
   prefabsToSpawn:
   - {fileID: 4453786517509598219, guid: c4bf4f5044c6a4145ad5fb7ce125be6a, type: 3}
   - {fileID: 3095184295761633573, guid: ca221c9964c25124d8a82bf0146d0c91, type: 3}
+--- !u!1 &582184701 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 268435717932877013, guid: 13ae6475ecba4db4b935f4a2d582816a, type: 3}
+  m_PrefabInstance: {fileID: 3573565915941246817}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &582184703
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 582184701}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &702413256
 GameObject:
   m_ObjectHideFlags: 0
@@ -1334,7 +1361,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 268435717932877013, guid: 13ae6475ecba4db4b935f4a2d582816a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 582184703}
   m_SourcePrefab: {fileID: 100100000, guid: 13ae6475ecba4db4b935f4a2d582816a, type: 3}
 --- !u!1001 &8263795022586643808
 PrefabInstance:
