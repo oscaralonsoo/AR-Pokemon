@@ -1177,6 +1177,7 @@ GameObject:
   - component: {fileID: 1507004729894929184}
   - component: {fileID: 1416505412764910295}
   - component: {fileID: 5494905286289246805}
+  - component: {fileID: 7017017267556164138}
   m_Layer: 0
   m_Name: Lapras
   m_TagString: Untagged
@@ -1307,6 +1308,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 2.808561, z: 1.0561523}
   m_Center: {x: 0, y: 1.1735507, z: 0.98657227}
+--- !u!114 &7017017267556164138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4453786517509598219}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa57ef44f7f72544f84fe0a39a1e06d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pokemon
+  maxHP: 100
+  currentHP: 50
+  redColor: {r: 1, g: 0.05, b: 0.05, a: 1}
+  redFadeDuration: 0.2
+  emissionIntensity: 2
+  redMaterial: {fileID: 0}
+  suckIntoBall: 1
+  onHealed:
+    m_PersistentCalls:
+      m_Calls: []
+  onCaptureStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onCaptured:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &4595686078832275004
 GameObject:
   m_ObjectHideFlags: 0

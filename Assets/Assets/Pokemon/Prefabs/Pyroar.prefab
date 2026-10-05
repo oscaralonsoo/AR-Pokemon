@@ -1711,6 +1711,7 @@ GameObject:
   - component: {fileID: 8821169613139175160}
   - component: {fileID: 4599251998482489043}
   - component: {fileID: 1229321293560324353}
+  - component: {fileID: 2575326217768508402}
   m_Layer: 0
   m_Name: Pyroar
   m_TagString: Untagged
@@ -1843,6 +1844,34 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5844714
   m_Center: {x: 0, y: 1.1279272, z: 0.50781375}
+--- !u!114 &2575326217768508402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3095184295761633573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa57ef44f7f72544f84fe0a39a1e06d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pokemon
+  maxHP: 100
+  currentHP: 50
+  redColor: {r: 1, g: 0.05, b: 0.05, a: 1}
+  redFadeDuration: 0.2
+  emissionIntensity: 2
+  redMaterial: {fileID: 0}
+  suckIntoBall: 1
+  onHealed:
+    m_PersistentCalls:
+      m_Calls: []
+  onCaptureStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onCaptured:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &3099768773502904601
 GameObject:
   m_ObjectHideFlags: 0
