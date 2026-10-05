@@ -1,9 +1,14 @@
 fileFormatVersion: 2
-guid: 508712e9f8af1ae4abedcfabe4f401b8
+guid: b85687fd884db7a4c9b51f07ace0bdc3
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material #35
+    second: {fileID: 2100000, guid: 02a5152f8f7b09141b256cee052d369a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -91,7 +96,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.001
+    globalScale: 0.1
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
@@ -100,7 +105,7 @@ ModelImporter:
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 0
+  avatarSetup: 1
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
