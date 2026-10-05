@@ -8,6 +8,11 @@ public class Pokemon : MonoBehaviour
     [SerializeField] private int maxHP = 100;
     [SerializeField] private int currentHP = 50;
 
+    [Header("Barra de vida")]
+    [SerializeField] private WorldHealthBar healthBar;
+    [SerializeField] private Vector3 healthBarOffset = new Vector3(0f, 0.3f, 0f); 
+    [SerializeField] private bool placeAboveBounds = true;
+
     [Header("Efecto de captura")]
     [SerializeField] private Color redColor = new Color(1f, 0.05f, 0.05f, 1f);
     [SerializeField] private float redFadeDuration = 0.2f;
@@ -60,10 +65,47 @@ public class Pokemon : MonoBehaviour
     {
         RefreshChildren();
     }
+
+    void Start()
+    {
+        if (healthBar != null)
+        {
+            healthBar.SetHealthInstant(currentHP, maxHP);
+            PositionHealthBar();
+        }
+    }
+
     private void RefreshChildren()
     {
         renderers = GetComponentsInChildren<Renderer>(true);
         colliders = GetComponentsInChildren<Collider>(true);
+    }
+
+    private void PositionHealthBar()
+    {
+        if (healthBar == null) return;
+
+        if (placeAboveBounds)
+        {
+            bool has = false;
+            Bounds b = default;
+            foreach (var r in renderers)
+            {
+                if (r == null || r is ParticleSystemRenderer) continue;
+                if (r.transform.IsChildOf(healthBar.transform)) continue;
+                if (!has) { b = r.bounds; has = true; }
+                else b.Encapsulate(r.bounds);
+            }
+
+            if (has)
+            {
+                Vector3 top = new Vector3(b.center.x, b.max.y, b.center.z);
+                healthBar.transform.position = top + healthBarOffset;
+                return;
+            }
+        }
+
+        healthBar.transform.position = transform.position + healthBarOffset;
     }
 
     public void Heal(int amount)
@@ -72,6 +114,9 @@ public class Pokemon : MonoBehaviour
         int before = currentHP;
         currentHP = Mathf.Min(maxHP, currentHP + amount);
         Debug.Log($"{name} curado +{currentHP - before} PS ({currentHP}/{maxHP})");
+
+        if (healthBar != null) healthBar.SetHealth(currentHP, maxHP);
+
         onHealed?.Invoke(currentHP - before);
     }
 
@@ -83,6 +128,8 @@ public class Pokemon : MonoBehaviour
         RefreshChildren();
 
         foreach (var c in colliders) c.enabled = false;
+        if (healthBar != null) healthBar.SetVisible(false);
+
         onCaptureStarted?.Invoke();
         StartCoroutine(CaptureRoutine(Mathf.Max(0.1f, duration), sinkTarget));
         return true;
@@ -165,7 +212,7 @@ public class Pokemon : MonoBehaviour
         {
             if (r == null || r is ParticleSystemRenderer) continue;
 
-            Material[] mats = r.materials; 
+            Material[] mats = r.materials;
             bool changed = false;
 
             for (int i = 0; i < mats.Length; i++)

@@ -1,0 +1,62 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class WorldHealthBar : MonoBehaviour
+{
+    [Header("Referencias")]
+    [SerializeField] private Image fill;        
+    [SerializeField] private Canvas canvas;   
+
+    [Header("Ajustes")]
+    [SerializeField] private float smoothSpeed = 8f;
+    [SerializeField] private bool yawOnly = false; 
+
+    private float targetFill = 1f;
+    private Camera cam;
+
+    void Awake()
+    {
+        if (canvas == null) canvas = GetComponentInChildren<Canvas>(true);
+        cam = Camera.main;
+        if (canvas != null) canvas.worldCamera = cam;
+    }
+
+    public void SetHealth(int current, int max)
+    {
+        targetFill = max > 0 ? Mathf.Clamp01((float)current / max) : 0f;
+    }
+
+    public void SetHealthInstant(int current, int max)
+    {
+        SetHealth(current, max);
+        if (fill != null) fill.fillAmount = targetFill;
+    }
+
+    public void SetVisible(bool visible)
+    {
+        if (canvas != null) canvas.enabled = visible;
+    }
+
+    void Update()
+    {
+        if (fill != null)
+            fill.fillAmount = Mathf.MoveTowards(fill.fillAmount, targetFill, smoothSpeed * Time.deltaTime);
+    }
+
+    void LateUpdate()
+    {
+        if (cam == null) { cam = Camera.main; if (cam == null) return; }
+
+        if (yawOnly)
+        {
+            Vector3 dir = transform.position - cam.transform.position;
+            dir.y = 0f;
+            if (dir.sqrMagnitude > 0.0001f)
+                transform.rotation = Quaternion.LookRotation(dir);
+        }
+        else
+        {
+            transform.rotation = cam.transform.rotation;
+        }
+    }
+}
