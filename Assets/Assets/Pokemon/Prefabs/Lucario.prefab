@@ -14,27 +14,27 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 37413aeedab282442b3efd49dc751e87, type: 2}
     - target: {fileID: -8679921383154817045, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
       propertyPath: m_LocalScale.x
-      value: 9.879812
+      value: 0.290089
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
       propertyPath: m_LocalScale.y
-      value: 9.879812
+      value: 0.290089
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
       propertyPath: m_LocalScale.z
-      value: 9.879812
+      value: 0.290089
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.88
+      value: -27.68
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.41
+      value: -0.036
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -39.39
+      value: -39.408
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -83,6 +83,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3024469859435680655}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5545539306201601355}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1897262142349282808}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2965219242752126418}
   m_SourcePrefab: {fileID: 100100000, guid: 6f4332d984179ab4ea342d60a20f1d6b, type: 3}
 --- !u!1 &5687756827924256757 stripped
 GameObject:
@@ -111,3 +120,94 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5545539306201601355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5687756827924256757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f05bc8bff3fb24145a3c93658e933ac8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PokemonSpawnEffect
+  spawnParticle: {fileID: 3280519133390621005, guid: bb22f74010e536743b4327ef5824cab8, type: 3}
+  whiteMaterial: {fileID: 2100000, guid: eb0b0c9045511e44bad95b25e625a803, type: 2}
+  duration: 1
+  particleFadeDuration: 0.5
+  scaleCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &1897262142349282808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5687756827924256757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa57ef44f7f72544f84fe0a39a1e06d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pokemon
+  maxHP: 100
+  currentHP: 50
+  redColor: {r: 1, g: 0.05, b: 0.05, a: 1}
+  redFadeDuration: 0.2
+  emissionIntensity: 2
+  redMaterial: {fileID: 0}
+  suckIntoBall: 1
+  onHealed:
+    m_PersistentCalls:
+      m_Calls: []
+  onCaptureStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onCaptured:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!136 &2965219242752126418
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5687756827924256757}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1.7875372
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.8331664, z: 0}
