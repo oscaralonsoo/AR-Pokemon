@@ -10,13 +10,9 @@ public class Pokemon : MonoBehaviour
 
     [Header("Efecto de captura")]
     [SerializeField] private Color redColor = new Color(1f, 0.05f, 0.05f, 1f);
-    [Tooltip("Tiempo (s) que tarda en ponerse rojo antes de encogerse.")]
     [SerializeField] private float redFadeDuration = 0.2f;
-    [Tooltip("Intensidad de la emisión roja (si el shader la soporta).")]
     [SerializeField] private float emissionIntensity = 2f;
-    [Tooltip("OPCIONAL: material rojo plano (Unlit). Si lo asignas, el pokémon se vuelve una silueta roja en vez de teñirse.")]
     [SerializeField] private Material redMaterial;
-    [Tooltip("El pokémon se mueve hacia la pokeball mientras se encoge. Desactívalo si el tracking le recoloca cada frame y tiembla.")]
     [SerializeField] private bool suckIntoBall = true;
 
     public UnityEvent<int> onHealed;
@@ -58,8 +54,13 @@ public class Pokemon : MonoBehaviour
     private Renderer[] renderers;
     private Collider[] colliders;
     private readonly List<TintMat> tints = new List<TintMat>();
+    private Material fallbackRed;
 
     void Awake()
+    {
+        RefreshChildren();
+    }
+    private void RefreshChildren()
     {
         renderers = GetComponentsInChildren<Renderer>(true);
         colliders = GetComponentsInChildren<Collider>(true);
@@ -74,11 +75,12 @@ public class Pokemon : MonoBehaviour
         onHealed?.Invoke(currentHP - before);
     }
 
-  
     public bool Capture(float duration, Transform sinkTarget = null)
     {
         if (IsCaptured || IsBeingCaptured) return false;
         IsBeingCaptured = true;
+
+        RefreshChildren();
 
         foreach (var c in colliders) c.enabled = false;
         onCaptureStarted?.Invoke();
@@ -125,6 +127,24 @@ public class Pokemon : MonoBehaviour
         onCaptured?.Invoke();
     }
 
+    private Material GetFallbackRed()
+    {
+        if (fallbackRed != null) return fallbackRed;
+
+        Shader sh = Shader.Find("Universal Render Pipeline/Unlit");
+        if (sh == null) sh = Shader.Find("Unlit/Color");
+        if (sh == null) sh = Shader.Find("Sprites/Default");
+        if (sh == null)
+        {
+            return null;
+        }
+
+        fallbackRed = new Material(sh) { name = "RuntimeRedFallback" };
+        if (fallbackRed.HasProperty(BaseColorId)) fallbackRed.SetColor(BaseColorId, redColor);
+        if (fallbackRed.HasProperty(ColorId)) fallbackRed.SetColor(ColorId, redColor);
+        return fallbackRed;
+    }
+
     private void PrepareRed()
     {
         tints.Clear();
@@ -144,10 +164,24 @@ public class Pokemon : MonoBehaviour
         foreach (var r in renderers)
         {
             if (r == null || r is ParticleSystemRenderer) continue;
-            foreach (var m in r.materials)
+
+            Material[] mats = r.materials; 
+            bool changed = false;
+
+            for (int i = 0; i < mats.Length; i++)
             {
+                Material m = mats[i];
+                if (m == null) continue;
+
                 int id = m.HasProperty(BaseColorId) ? BaseColorId
                        : m.HasProperty(ColorId) ? ColorId : -1;
+
+                if (id == -1)
+                {
+                    Material fb = GetFallbackRed();
+                    if (fb != null) { mats[i] = fb; changed = true; }
+                    continue;
+                }
 
                 if (m.HasProperty(EmissionId)) m.EnableKeyword("_EMISSION");
 
@@ -155,9 +189,11 @@ public class Pokemon : MonoBehaviour
                 {
                     mat = m,
                     colorId = id,
-                    baseColor = id != -1 ? m.GetColor(id) : Color.white
+                    baseColor = m.GetColor(id)
                 });
             }
+
+            if (changed) r.materials = mats;
         }
     }
 
