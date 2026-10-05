@@ -1960,7 +1960,7 @@ Transform:
   m_GameObject: {fileID: 3728415161391923595}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 549.97064, y: 0.000000087869466, z: -2692.3403}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2006,7 +2006,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Pokemon
   maxHP: 100
   currentHP: 50
-  healthBar: {fileID: 0}
+  healthBar: {fileID: 2271973335131890562}
   healthBarOffset: {x: 0, y: 0.3, z: 0}
   placeAboveBounds: 1
   redColor: {r: 1, g: 0.05, b: 0.05, a: 1}
@@ -5715,6 +5715,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 26bf8b01854424e488c00d4fc632a717, type: 3}
+--- !u!114 &2271973335131890562 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7706588012453154916, guid: 26bf8b01854424e488c00d4fc632a717, type: 3}
+  m_PrefabInstance: {fileID: 8463643873262957542}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6d65d87321b0924e82557b56032b847, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldHealthBar
 --- !u!4 &6284995372737934689 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2471401694806361735, guid: 26bf8b01854424e488c00d4fc632a717, type: 3}

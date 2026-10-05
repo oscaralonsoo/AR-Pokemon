@@ -57,6 +57,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 26bf8b01854424e488c00d4fc632a717, type: 3}
+--- !u!114 &3225761168215092933 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7706588012453154916, guid: 26bf8b01854424e488c00d4fc632a717, type: 3}
+  m_PrefabInstance: {fileID: 5059644949511306913}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6d65d87321b0924e82557b56032b847, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldHealthBar
 --- !u!4 &7240476453727582246 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2471401694806361735, guid: 26bf8b01854424e488c00d4fc632a717, type: 3}
@@ -88,7 +99,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fb4afb10aab9d5544a3e173bc4cb398a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 713.6788
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fb4afb10aab9d5544a3e173bc4cb398a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -96,7 +107,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fb4afb10aab9d5544a3e173bc4cb398a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 824.7123
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fb4afb10aab9d5544a3e173bc4cb398a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -160,6 +171,12 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fb4afb10aab9d5544a3e173bc4cb398a, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 7788939682002320165}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fb4afb10aab9d5544a3e173bc4cb398a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6914540070380890048}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fb4afb10aab9d5544a3e173bc4cb398a, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 2198681897743689475}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fb4afb10aab9d5544a3e173bc4cb398a, type: 3}
       insertIndex: -1
@@ -181,6 +198,77 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: fb4afb10aab9d5544a3e173bc4cb398a, type: 3}
   m_PrefabInstance: {fileID: 7785754430765405195}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7788939682002320165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6975486169257552218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa57ef44f7f72544f84fe0a39a1e06d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pokemon
+  maxHP: 100
+  currentHP: 50
+  healthBar: {fileID: 3225761168215092933}
+  healthBarOffset: {x: 0, y: 0.3, z: 0}
+  placeAboveBounds: 1
+  redColor: {r: 1, g: 0.05, b: 0.05, a: 1}
+  redFadeDuration: 0.2
+  emissionIntensity: 2
+  redMaterial: {fileID: 0}
+  suckIntoBall: 1
+  onHealed:
+    m_PersistentCalls:
+      m_Calls: []
+  onCaptureStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onCaptured:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &6914540070380890048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6975486169257552218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f05bc8bff3fb24145a3c93658e933ac8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PokemonSpawnEffect
+  spawnParticle: {fileID: 3280519133390621005, guid: bb22f74010e536743b4327ef5824cab8, type: 3}
+  whiteMaterial: {fileID: 2100000, guid: eb0b0c9045511e44bad95b25e625a803, type: 2}
+  duration: 1
+  particleFadeDuration: 0.5
+  scaleCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!136 &2198681897743689475
 CapsuleCollider:
   m_ObjectHideFlags: 0
