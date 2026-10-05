@@ -13,16 +13,28 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: bb522b1cfa3fa1549a9f31b095fab9b6, type: 2}
     - target: {fileID: -8679921383154817045, guid: 508712e9f8af1ae4abedcfabe4f401b8, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508712e9f8af1ae4abedcfabe4f401b8, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508712e9f8af1ae4abedcfabe4f401b8, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508712e9f8af1ae4abedcfabe4f401b8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.49699
+      value: 550.3471
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 508712e9f8af1ae4abedcfabe4f401b8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0
+      value: 0.00000011617499
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 508712e9f8af1ae4abedcfabe4f401b8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -8.59737
+      value: -2696.9236
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 508712e9f8af1ae4abedcfabe4f401b8, type: 3}
       propertyPath: m_LocalRotation.w
@@ -56,6 +68,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Houndoom
       objectReference: {fileID: 0}
+    - target: {fileID: 3133978200661918090, guid: 508712e9f8af1ae4abedcfabe4f401b8, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 99ce89c7a14120d4db4db4cd2b51506c, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

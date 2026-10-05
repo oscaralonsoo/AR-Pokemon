@@ -23,19 +23,19 @@ MonoBehaviour:
       m_GuidLow: 5467547335416449873
       m_GuidHigh: 6439979170360069013
     m_SerializedTextureGuid:
-      m_GuidLow: 15295521544503158421
-      m_GuidHigh: 1620086818312499208
-    m_Size: {x: 0.06, y: 0.083430655}
+      m_GuidLow: 8229317983302657836
+      m_GuidHigh: 13712280049876893705
+    m_Size: {x: 0.06, y: 0.08352668}
     m_SpecifySize: 1
-    m_Name: Charmander
-    m_Texture: {fileID: 2800000, guid: 3a71e6959bced4440830cfae60b47b16, type: 3}
+    m_Name: Pyroar
+    m_Texture: {fileID: 2800000, guid: e27d272c691a7234098096f90dce4bbe, type: 3}
   - m_SerializedGuid:
       m_GuidLow: 5112850027758004317
       m_GuidHigh: 1711590464469428661
     m_SerializedTextureGuid:
-      m_GuidLow: 3973456135043461661
-      m_GuidHigh: 13642874410000226744
-    m_Size: {x: 0.06, y: 0.083430655}
+      m_GuidLow: 1203772789102016284
+      m_GuidHigh: 4062472895995598955
+    m_Size: {x: 0.06, y: 0.0837551}
     m_SpecifySize: 1
-    m_Name: Bellsprout
-    m_Texture: {fileID: 2800000, guid: 73dcb21d8d4d3724b899542bfe3955bd, type: 3}
+    m_Name: Lapras
+    m_Texture: {fileID: 2800000, guid: 4cb4f71ca8f910b46b58783393cd6038, type: 3}
