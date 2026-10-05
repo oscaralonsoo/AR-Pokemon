@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e28c2c9188af462449718ba9b0918dcf
+guid: 25de077678a5c2a46a1b78f515367db9
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -31,11 +31,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Scene Root.001|Attack.001
-      takeName: Scene Root.001|Attack.001
-      internalID: -459741852546083860
+      name: Scene Root|Attack
+      takeName: Scene Root|Attack
+      internalID: -787003449684470208
       firstFrame: 0
-      lastFrame: 79
+      lastFrame: 58
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -60,38 +60,9 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Scene Root.001|Base
-      takeName: Scene Root.001|Base
-      internalID: -8203527118281219304
-      firstFrame: 0
-      lastFrame: 89
-      wrapMode: 0
-      orientationOffsetY: 0
-      level: 0
-      cycleOffset: 0
-      loop: 0
-      hasAdditiveReferencePose: 0
-      loopTime: 1
-      loopBlend: 0
-      loopBlendOrientation: 0
-      loopBlendPositionY: 0
-      loopBlendPositionXZ: 0
-      keepOriginalOrientation: 0
-      keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 0
-      heightFromFeet: 0
-      mirror: 0
-      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
-      events: []
-      transformMask: []
-      maskType: 3
-      maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
-    - serializedVersion: 16
-      name: Scene Root.001|Damage.001
-      takeName: Scene Root.001|Damage.001
-      internalID: -6188231836689231802
+      name: Scene Root|Damage
+      takeName: Scene Root|Damage
+      internalID: -2294173643207589939
       firstFrame: 0
       lastFrame: 19
       wrapMode: 0
@@ -118,9 +89,9 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Scene Root.001|Death.001
-      takeName: Scene Root.001|Death.001
-      internalID: 329499594228133980
+      name: Scene Root|Death
+      takeName: Scene Root|Death
+      internalID: -7668647601488742867
       firstFrame: 0
       lastFrame: 49
       wrapMode: 0
@@ -130,6 +101,35 @@ ModelImporter:
       loop: 0
       hasAdditiveReferencePose: 0
       loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Scene Root|stand01
+      takeName: Scene Root|stand01
+      internalID: 1831474108197673249
+      firstFrame: 0
+      lastFrame: 41
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0
