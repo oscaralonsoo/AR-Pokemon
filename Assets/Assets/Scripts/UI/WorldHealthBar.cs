@@ -10,11 +10,15 @@ public class WorldHealthBar : MonoBehaviour
     [SerializeField] private TMP_Text nameText;
 
     [Header("Ajustes")]
-    [SerializeField] private float smoothSpeed = 8f;
+    [Tooltip("Segundos que tardaría en vaciarse una barra completa. " +
+             "Más alto = la vida baja más despacio")]
+    [SerializeField] private float fullBarSeconds = 2f;
     [SerializeField] private bool yawOnly = false;
 
     private float targetFill = 1f;
     private Camera cam;
+
+    public float CurrentFill => fill != null ? fill.fillAmount : targetFill;
 
     void Awake()
     {
@@ -48,7 +52,10 @@ public class WorldHealthBar : MonoBehaviour
     void Update()
     {
         if (fill != null)
-            fill.fillAmount = Mathf.MoveTowards(fill.fillAmount, targetFill, smoothSpeed * Time.deltaTime);
+        {
+            float speed = 1f / Mathf.Max(0.01f, fullBarSeconds);
+            fill.fillAmount = Mathf.MoveTowards(fill.fillAmount, targetFill, speed * Time.deltaTime);
+        }
     }
 
     void LateUpdate()
