@@ -37,3 +37,43 @@ MonoBehaviour:
     m_SpecifySize: 1
     m_Name: Lapras
     m_Texture: {fileID: 2800000, guid: 4cb4f71ca8f910b46b58783393cd6038, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 4732857133870282722
+      m_GuidHigh: 10478392141876106670
+    m_SerializedTextureGuid:
+      m_GuidLow: 16164815995413086259
+      m_GuidHigh: 1839979039163049976
+    m_Size: {x: 0.06, y: 0.0837551}
+    m_SpecifySize: 1
+    m_Name: Alakazam
+    m_Texture: {fileID: 2800000, guid: c2264033f680e054f8677aff2feb8819, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 5725706067464475026
+      m_GuidHigh: 9329787583524467131
+    m_SerializedTextureGuid:
+      m_GuidLow: 8193213048909839778
+      m_GuidHigh: 2498377431736472778
+    m_Size: {x: 0.06, y: 0.0837551}
+    m_SpecifySize: 1
+    m_Name: Houndoom
+    m_Texture: {fileID: 2800000, guid: c55dbda223db71b4ca5481850905ac22, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 5460574096480215200
+      m_GuidHigh: 7432694898129594244
+    m_SerializedTextureGuid:
+      m_GuidLow: 2590904394590603819
+      m_GuidHigh: 10492910739778176906
+    m_Size: {x: 0.06, y: 0.0837551}
+    m_SpecifySize: 1
+    m_Name: Jolteon
+    m_Texture: {fileID: 2800000, guid: d6924a2bbdd123f48a075c58b94e9e91, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 4638804412049529447
+      m_GuidHigh: 4461928156380902845
+    m_SerializedTextureGuid:
+      m_GuidLow: 8044677217933387306
+      m_GuidHigh: 5417945974042229657
+    m_Size: {x: 0.06, y: 0.0837551}
+    m_SpecifySize: 1
+    m_Name: Lucario
+    m_Texture: {fileID: 2800000, guid: a398e62a6f4e6fa4997b0b6b2869304b, type: 3}
