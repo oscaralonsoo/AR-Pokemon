@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Pokemon : MonoBehaviour
+public class PokemonCapture : MonoBehaviour
 {
     [SerializeField] private string pokemonName;
     [SerializeField] private int maxHP = 100;

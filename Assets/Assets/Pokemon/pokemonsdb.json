@@ -2,57 +2,108 @@
   "pokemon": [
     {
       "name": "Lapras",
-      "types": ["Water", "Ice"],
-      "baseStats": { "hp": 130, "attack": 85, "defense": 80, "spAttack": 85, "spDefense": 95, "speed": 60 },
-      "moves": [
-        { "name": "Hidro Giro", "type": "Water", "category": "Special", "power": 60, "accuracy": 100 },
-        { "name": "Surf", "type": "Water", "category": "Special", "power": 90, "accuracy": 100 }
-      ]
+      "hp": 130,
+      "type": "Water",
+      "stage": "Basic",
+      "attacks": [
+        { "name": "Hidro Giro", "damage": 60 },
+        { "name": "Surf", "damage": 90 }
+      ],
+      "weakness": {
+        "type": "Lightning",
+        "value": 20
+      },
+      "resistance": null
     },
     {
       "name": "Houndoom",
-      "types": ["Dark", "Fire"],
-      "baseStats": { "hp": 75, "attack": 90, "defense": 50, "spAttack": 110, "spDefense": 80, "speed": 95 },
-      "moves": [
-        { "name": "Colmillo Afilado", "type": "Dark", "category": "Physical", "power": 70, "accuracy": 100 },
-        { "name": "Llamarada", "type": "Fire", "category": "Special", "power": 110, "accuracy": 85 }
-      ]
+      "hp": 75,
+      "type": "Fire",
+      "stage": "Basic",
+      "attacks": [
+        { "name": "Colmillo Afilado", "damage": 70 },
+        { "name": "Llamarada", "damage": 110 }
+      ],
+      "weakness": {
+        "type": "Water",
+        "value": 20
+      },
+      "resistance": {
+        "type": "Fire",
+        "value": 20
+      }
     },
     {
       "name": "Lucario",
-      "types": ["Fighting", "Steel"],
-      "baseStats": { "hp": 70, "attack": 110, "defense": 70, "spAttack": 115, "spDefense": 70, "speed": 90 },
-      "moves": [
-        { "name": "Esfera Aural", "type": "Fighting", "category": "Special", "power": 80, "accuracy": 100 },
-        { "name": "Golpe Aplastante", "type": "Steel", "category": "Physical", "power": 80, "accuracy": 100 }
-      ]
+      "hp": 70,
+      "type": "Fighting",
+      "stage": "Basic",
+      "attacks": [
+        { "name": "Esfera Aural", "damage": 80 },
+        { "name": "Golpe Aplastante", "damage": 80 }
+      ],
+      "weakness": {
+        "type": "Fire",
+        "value": 20
+      },
+      "resistance": {
+        "type": "Normal",
+        "value": 20
+      }
     },
     {
       "name": "Jolteon",
-      "types": ["Electric"],
-      "baseStats": { "hp": 65, "attack": 65, "defense": 60, "spAttack": 110, "spDefense": 95, "speed": 130 },
-      "moves": [
-        { "name": "Ataque Lineal", "type": "Normal", "category": "Physical", "power": 60, "accuracy": 100 },
-        { "name": "Relámpago de Lucha", "type": "Electric", "category": "Special", "power": 90, "accuracy": 100 }
-      ]
+      "hp": 65,
+      "type": "Lightning",
+      "stage": "Basic",
+      "attacks": [
+        { "name": "Ataque Lineal", "damage": 60 },
+        { "name": "Relámpago de Lucha", "damage": 90 }
+      ],
+      "weakness": {
+        "type": "Fighting",
+        "value": 20
+      },
+      "resistance": {
+        "type": "Lightning",
+        "value": 20
+      }
     },
     {
       "name": "Alakazam",
-      "types": ["Psychic"],
-      "baseStats": { "hp": 55, "attack": 50, "defense": 45, "spAttack": 135, "spDefense": 95, "speed": 120 },
-      "moves": [
-        { "name": "Secuestro Mental", "type": "Psychic", "category": "Special", "power": 65, "accuracy": 100 },
-        { "name": "Mano Dimensional", "type": "Psychic", "category": "Special", "power": 85, "accuracy": 90 }
-      ]
+      "hp": 55,
+      "type": "Psychic",
+      "stage": "Basic",
+      "attacks": [
+        { "name": "Secuestro Mental", "damage": 65 },
+        { "name": "Mano Dimensional", "damage": 85 }
+      ],
+      "weakness": {
+        "type": "Dark",
+        "value": 20
+      },
+      "resistance": {
+        "type": "Psychic",
+        "value": 20
+      }
     },
     {
       "name": "Pyroar",
-      "types": ["Fire", "Normal"],
-      "baseStats": { "hp": 86, "attack": 68, "defense": 72, "spAttack": 109, "spDefense": 66, "speed": 106 },
-      "moves": [
-        { "name": "Nitrocarga", "type": "Fire", "category": "Physical", "power": 50, "accuracy": 100 },
-        { "name": "Calcinación", "type": "Fire", "category": "Special", "power": 60, "accuracy": 100 }
-      ]
+      "hp": 86,
+      "type": "Fire",
+      "stage": "Basic",
+      "attacks": [
+        { "name": "Nitrocarga", "damage": 50 },
+        { "name": "Calcinación", "damage": 60 }
+      ],
+      "weakness": {
+        "type": "Water",
+        "value": 20
+      },
+      "resistance": {
+        "type": "Fire",
+        "value": 20
+      }
     }
   ]
 }

@@ -39,7 +39,7 @@ public class ThrowableItem : MonoBehaviour
 
     public UnityEvent<Collision> onHit;
     public UnityEvent<float> onCurveThrow;
-    public UnityEvent<Pokemon> onPokemonHit;
+    public UnityEvent<PokemonCapture> onPokemonHit;
     public event Action<ThrowableItem> Thrown;
 
     public event Action<ThrowableItem> Resolved;
@@ -180,7 +180,7 @@ public class ThrowableItem : MonoBehaviour
         hit = true;
         curveAccel = Vector3.zero;
 
-        Pokemon pokemon = c.collider.GetComponentInParent<Pokemon>();
+        PokemonCapture pokemon = c.collider.GetComponentInParent<PokemonCapture>();
         if (pokemon != null)
         {
             if (itemType == ItemType.Pokeball)

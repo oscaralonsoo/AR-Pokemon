@@ -5,20 +5,25 @@ using UnityEngine.XR.ARSubsystems;
 
 public class MultipleImagesTrackingManager : MonoBehaviour
 {
-    [SerializeField] List<GameObject> prefabsToSpawn = new List<GameObject>();
+    [SerializeField] private List<GameObject> prefabsToSpawn = new List<GameObject>();
+    [SerializeField] private BattleManager battleManager;
 
     private ARTrackedImageManager _trackedImageManager;
 
     private Dictionary<string, GameObject> _arObjects;
+    private HashSet<string> _registeredCards;
 
     private void Start()
     {
         _trackedImageManager = GetComponent<ARTrackedImageManager>();
-        if (_trackedImageManager == null) return;
+
+        if (_trackedImageManager == null)
+            return;
 
         _trackedImageManager.trackablesChanged.AddListener(OnImagesTrackedChanged);
 
         _arObjects = new Dictionary<string, GameObject>();
+        _registeredCards = new HashSet<string>();
 
         SetupSceneElements();
     }
@@ -35,7 +40,11 @@ public class MultipleImagesTrackingManager : MonoBehaviour
     {
         foreach (var prefab in prefabsToSpawn)
         {
-            var arObject = Instantiate(prefab, Vector3.zero, Quaternion.identity);
+            var arObject = Instantiate(
+                prefab,
+                Vector3.zero,
+                Quaternion.identity
+            );
 
             arObject.name = prefab.name;
             arObject.SetActive(false);
@@ -56,15 +65,12 @@ public class MultipleImagesTrackingManager : MonoBehaviour
         {
             UpdateTrackedImage(trackedImage);
         }
-
-/*        foreach (var trackedImage in eventArgs.removed)
-        {
-        }*/
     }
 
     private void UpdateTrackedImage(ARTrackedImage trackedImage)
     {
-        if (trackedImage == null) return;
+        if (trackedImage == null)
+            return;
 
         string imageName = trackedImage.referenceImage.name;
 
@@ -73,10 +79,22 @@ public class MultipleImagesTrackingManager : MonoBehaviour
 
         if (trackedImage.trackingState == TrackingState.Tracking)
         {
+            // Actualizar posición y rotación del Pokémon
             arObject.SetActive(true);
 
-            arObject.transform.position = trackedImage.transform.position;
-            arObject.transform.rotation = trackedImage.transform.rotation;
+            arObject.transform.position =
+                trackedImage.transform.position;
+
+            arObject.transform.rotation =
+                trackedImage.transform.rotation;
+
+            // Registrar la carta solamente una vez
+            if (!_registeredCards.Contains(imageName))
+            {
+                _registeredCards.Add(imageName);
+
+                battleManager.RegisterCard(imageName);
+            }
         }
     }
 }

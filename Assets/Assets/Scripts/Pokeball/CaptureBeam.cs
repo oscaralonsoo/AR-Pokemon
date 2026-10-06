@@ -8,7 +8,7 @@ public class CaptureBeam : MonoBehaviour
 
     private LineRenderer lr;
 
-    public void Play(Transform origin, Pokemon target, float duration,
+    public void Play(Transform origin, PokemonCapture target, float duration,
                      Color color, float width, Material material)
     {
         lr = GetComponent<LineRenderer>();
@@ -28,7 +28,7 @@ public class CaptureBeam : MonoBehaviour
         StartCoroutine(Run(origin, target, Mathf.Max(0.1f, duration), color, width));
     }
 
-    private IEnumerator Run(Transform origin, Pokemon target, float duration, Color color, float width)
+    private IEnumerator Run(Transform origin, PokemonCapture target, float duration, Color color, float width)
     {
         float t = 0f;
         float jitter = width * 1.5f;

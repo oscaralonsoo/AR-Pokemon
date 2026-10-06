@@ -90,7 +90,7 @@ public class PokeballCapture : MonoBehaviour
     {
         if (anchor != null) Destroy(anchor.gameObject);
     }
-    public bool TryStart(Pokemon pokemon, Camera camera, Vector3 ballFaceAxis)
+    public bool TryStart(PokemonCapture pokemon, Camera camera, Vector3 ballFaceAxis)
     {
         if (capturing) return false;
 
@@ -113,7 +113,7 @@ public class PokeballCapture : MonoBehaviour
         return true;
     }
 
-    private void SpawnBeam(Pokemon pokemon, float duration)
+    private void SpawnBeam(PokemonCapture pokemon, float duration)
     {
         var go = new GameObject("CaptureBeam");
         go.transform.SetParent(transform, false);
@@ -125,7 +125,7 @@ public class PokeballCapture : MonoBehaviour
         if (!capturing) return false;
         if (landed) return true;
         if (Time.time - startTime < 0.1f) return true; 
-        if (c.collider.GetComponentInParent<Pokemon>() != null) return true;
+        if (c.collider.GetComponentInParent<PokemonCapture>() != null) return true;
 
         landed = true;
         Landed?.Invoke();
