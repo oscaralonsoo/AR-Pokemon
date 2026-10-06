@@ -1,5 +1,6 @@
 using System;
-using UnityEditor;
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,24 +12,53 @@ public class BattleManager : MonoBehaviour
         WaitingForEnemy,
         PlayerTurn,
         EnemyTurn,
-        BattleOver
+        BattleOver,
+        Resolving  
     }
+
+    private const string TriggerAttack = "Attack";     
+    private const string TriggerAttack2 = "Attack2";   
+    private const string TriggerDamage = "Damage";
+    private const string TriggerDeath = "Death";
 
     [Header("Battle State")]
     [SerializeField] private BattleState currentState;
 
+    [Header("Datos")]
+    [Tooltip("Ruta dentro de una carpeta Resources, sin extensión. " +
+             "El archivo debe estar en Assets/Resources/pokemonsdb.json")]
+    [SerializeField] private string databaseResourcePath = "pokemonsdb";
+
     [Header("UI")]
     [SerializeField] private Text playerNameText;
     [SerializeField] private Text enemyNameText;
-
     [SerializeField] private Text playerHPText;
     [SerializeField] private Text enemyHPText;
 
+    [Header("Botones de ataque")]
     [SerializeField] private Button attackButton1;
     [SerializeField] private Button attackButton2;
 
-    [SerializeField] private Text attackButton1Text;
-    [SerializeField] private Text attackButton2Text;
+    [Header("Textos de los botones (TextMeshPro)")]
+    [Tooltip("Si el texto es un hijo del botón puedes dejarlo vacío: se busca solo")]
+    [SerializeField] private TMP_Text attackButton1TMP;
+    [SerializeField] private TMP_Text attackButton2TMP;
+
+    [Header("Reinicio (opcional)")]
+    [SerializeField] private Button resetButton;
+    [SerializeField] private MultipleImagesTrackingManager trackingManager;
+
+    [Header("Tiempos (segundos)")]
+    [Tooltip("Tiempo desde que empieza la animación de ataque hasta que el golpe llega")]
+    [SerializeField] private float attackHitDelay = 0.6f;
+    [Tooltip("Duración aproximada de la animación Damage")]
+    [SerializeField] private float hitReactionDuration = 0.8f;
+    [Tooltip("Duración aproximada de la animación Death")]
+    [SerializeField] private float deathDuration = 2f;
+    [Tooltip("Pausa antes de que la IA ataque")]
+    [SerializeField] private float enemyThinkDelay = 0.8f;
+    [Tooltip("Duración del efecto rojo + encogerse al morir (el mismo de la captura)")]
+    [SerializeField] private float defeatEffectDuration = 1f;
 
     private PokemonDatabase database;
 
@@ -38,19 +68,38 @@ public class BattleManager : MonoBehaviour
     private int playerCurrentHP;
     private int enemyCurrentHP;
 
+    private WorldHealthBar playerHealthBar;
+    private WorldHealthBar enemyHealthBar;
+
+    private Animator playerAnimator;
+    private Animator enemyAnimator;
+
+    private PokemonCapture playerCapture;
+    private PokemonCapture enemyCapture;
+
 
     // =========================================================
-    // START
+    // UNITY
     // =========================================================
 
-    private void Start()
+    private void Awake()
     {
         LoadDatabase();
 
-        currentState = BattleState.WaitingForPlayer;
+        if (attackButton1 != null)
+            attackButton1.onClick.AddListener(() => PlayerAttack(0));
 
+        if (attackButton2 != null)
+            attackButton2.onClick.AddListener(() => PlayerAttack(1));
+
+        if (resetButton != null)
+            resetButton.onClick.AddListener(ResetBattle);
+    }
+
+    private void Start()
+    {
+        currentState = BattleState.WaitingForPlayer;
         UpdateBattleUI();
-        UpdateAttackButtons();
     }
 
 
@@ -60,46 +109,26 @@ public class BattleManager : MonoBehaviour
 
     private void LoadDatabase()
     {
-#if UNITY_EDITOR
-
-        TextAsset jsonFile = AssetDatabase.LoadAssetAtPath<TextAsset>(
-            "Assets/Assets/Pokemon/pokemonsdb.json"
-        );
+        TextAsset jsonFile = Resources.Load<TextAsset>(databaseResourcePath);
 
         if (jsonFile == null)
         {
             Debug.LogError(
-                "No se ha encontrado el JSON en Assets/Assets/Pokemon/pokemonsdb.json"
+                $"No se ha encontrado el JSON en Resources/{databaseResourcePath}. " +
+                "Ponlo en Assets/Resources/pokemonsdb.json"
             );
-
             return;
         }
 
-        database = JsonUtility.FromJson<PokemonDatabase>(
-            jsonFile.text
-        );
+        database = JsonUtility.FromJson<PokemonDatabase>(jsonFile.text);
 
         if (database == null || database.pokemon == null)
         {
-            Debug.LogError(
-                "No se ha podido cargar la base de datos de Pokémon."
-            );
-
+            Debug.LogError("No se ha podido cargar la base de datos de Pokémon.");
             return;
         }
 
-        Debug.Log(
-            $"Base de datos cargada correctamente: " +
-            $"{database.pokemon.Length} Pokémon."
-        );
-
-#else
-
-        Debug.LogError(
-            "La carga mediante AssetDatabase solo funciona dentro del Editor de Unity."
-        );
-
-#endif
+        Debug.Log($"Base de datos cargada: {database.pokemon.Length} Pokémon.");
     }
 
 
@@ -107,129 +136,174 @@ public class BattleManager : MonoBehaviour
     // REGISTER CARD
     // =========================================================
 
-    public void RegisterCard(string pokemonName)
+    public void RegisterCard(string pokemonName, GameObject cardObject = null)
     {
         if (string.IsNullOrEmpty(pokemonName))
             return;
 
         if (database == null)
         {
-            Debug.LogError(
-                "La base de datos todavía no está cargada."
-            );
-
+            Debug.LogError("La base de datos no está cargada.");
             return;
         }
 
         switch (currentState)
         {
             case BattleState.WaitingForPlayer:
-
-                RegisterPlayerPokemon(pokemonName);
-
+                RegisterPlayerPokemon(pokemonName, cardObject);
                 break;
-
 
             case BattleState.WaitingForEnemy:
-
-                RegisterEnemyPokemon(pokemonName);
-
+                RegisterEnemyPokemon(pokemonName, cardObject);
                 break;
 
-
             default:
-
                 Debug.LogWarning(
                     $"No se puede registrar una carta durante el estado: {currentState}"
                 );
-
                 break;
         }
     }
 
-
-    // =========================================================
-    // REGISTER PLAYER
-    // =========================================================
-
-    private void RegisterPlayerPokemon(string pokemonName)
+    private void RegisterPlayerPokemon(string pokemonName, GameObject cardObject)
     {
         playerPokemon = FindPokemon(pokemonName);
 
         if (playerPokemon == null)
         {
-            Debug.LogError(
-                $"No se ha encontrado '{pokemonName}' en el JSON."
-            );
-
+            Debug.LogError($"No se ha encontrado '{pokemonName}' en el JSON.");
             return;
         }
 
         playerCurrentHP = playerPokemon.hp;
 
-        Debug.Log(
-            $"Jugador: {playerPokemon.name} | " +
-            $"HP: {playerCurrentHP} | " +
-            $"Tipo: {playerPokemon.type}"
-        );
+        playerHealthBar = FindHealthBar(cardObject);
+        playerAnimator = FindAnimator(cardObject);
+        playerCapture = FindCapture(cardObject);
+
+        if (playerCapture != null)
+            playerCapture.SetFullHealth();
+
+        SetupHealthBar(playerHealthBar, playerPokemon, playerCurrentHP);
+
+        Debug.Log($"Jugador: {playerPokemon.name} | HP: {playerCurrentHP} | Tipo: {playerPokemon.type}");
 
         currentState = BattleState.WaitingForEnemy;
-
-        Debug.Log(
-            "Esperando a que se escanee la carta del rival..."
-        );
+        Debug.Log("Esperando a que se escanee la carta del rival...");
 
         UpdateBattleUI();
     }
 
-
-    // =========================================================
-    // REGISTER ENEMY
-    // =========================================================
-
-    private void RegisterEnemyPokemon(string pokemonName)
+    private void RegisterEnemyPokemon(string pokemonName, GameObject cardObject)
     {
         enemyPokemon = FindPokemon(pokemonName);
 
         if (enemyPokemon == null)
         {
-            Debug.LogError(
-                $"No se ha encontrado '{pokemonName}' en el JSON."
-            );
-
+            Debug.LogError($"No se ha encontrado '{pokemonName}' en el JSON.");
             return;
         }
 
         enemyCurrentHP = enemyPokemon.hp;
 
-        Debug.Log(
-            $"Rival: {enemyPokemon.name} | " +
-            $"HP: {enemyCurrentHP} | " +
-            $"Tipo: {enemyPokemon.type}"
-        );
+        enemyHealthBar = FindHealthBar(cardObject);
+        enemyAnimator = FindAnimator(cardObject);
+        enemyCapture = FindCapture(cardObject);
+
+        if (enemyCapture != null)
+            enemyCapture.SetFullHealth();
+
+        SetupHealthBar(enemyHealthBar, enemyPokemon, enemyCurrentHP);
+
+        Debug.Log($"Rival: {enemyPokemon.name} | HP: {enemyCurrentHP} | Tipo: {enemyPokemon.type}");
 
         StartBattle();
     }
-
-
-    // =========================================================
-    // FIND POKEMON
-    // =========================================================
 
     private Pokemon FindPokemon(string pokemonName)
     {
         foreach (Pokemon pokemon in database.pokemon)
         {
-            if (string.Equals(
-                pokemon.name,
-                pokemonName,
-                StringComparison.OrdinalIgnoreCase))
-            {
+            if (string.Equals(pokemon.name, pokemonName, StringComparison.OrdinalIgnoreCase))
                 return pokemon;
-            }
         }
 
         return null;
+    }
+
+
+    // =========================================================
+    // HEALTH BARS / ANIMATORS
+    // =========================================================
+
+    private WorldHealthBar FindHealthBar(GameObject cardObject)
+    {
+        if (cardObject == null)
+            return null;
+
+        return cardObject.GetComponentInChildren<WorldHealthBar>(true);
+    }
+
+    private Animator FindAnimator(GameObject cardObject)
+    {
+        if (cardObject == null)
+            return null;
+
+        return cardObject.GetComponentInChildren<Animator>(true);
+    }
+
+    private PokemonCapture FindCapture(GameObject cardObject)
+    {
+        if (cardObject == null)
+            return null;
+
+        return cardObject.GetComponentInChildren<PokemonCapture>(true);
+    }
+    private void SetupHealthBar(WorldHealthBar bar, Pokemon pokemon, int currentHP)
+    {
+        if (bar == null)
+            return;
+
+        bar.SetName(pokemon.name);
+        bar.SetHealthInstant(currentHP, pokemon.hp);
+        bar.SetVisible(true);
+    }
+
+    private void UpdateHealthBars()
+    {
+        if (playerHealthBar != null && playerPokemon != null)
+            playerHealthBar.SetHealth(playerCurrentHP, playerPokemon.hp);
+
+        if (enemyHealthBar != null && enemyPokemon != null)
+            enemyHealthBar.SetHealth(enemyCurrentHP, enemyPokemon.hp);
+    }
+
+    private void PlayTrigger(Animator animator, string trigger)
+    {
+        if (animator == null)
+        {
+            Debug.LogWarning($"No hay Animator para lanzar el trigger '{trigger}'.");
+            return;
+        }
+
+        animator.SetTrigger(trigger);
+    }
+
+    private string GetAttackTrigger(int moveIndex)
+    {
+        return moveIndex == 0 ? TriggerAttack : TriggerAttack2;
+    }
+
+    private void ResetAnimator(Animator animator)
+    {
+        if (animator == null)
+            return;
+
+        animator.ResetTrigger(TriggerAttack);
+        animator.ResetTrigger(TriggerAttack2);
+        animator.ResetTrigger(TriggerDamage);
+        animator.ResetTrigger(TriggerDeath);
+        animator.Rebind();
     }
 
 
@@ -245,190 +319,136 @@ public class BattleManager : MonoBehaviour
 
         Debug.Log(
             $"Jugador: {playerPokemon.name} | " +
-            $"HP: {playerCurrentHP}/{playerPokemon.hp} | " +
-            $"Tipo: {playerPokemon.type}"
+            $"HP: {playerCurrentHP}/{playerPokemon.hp} | Tipo: {playerPokemon.type}"
         );
 
         Debug.Log(
             $"Rival: {enemyPokemon.name} | " +
-            $"HP: {enemyCurrentHP}/{enemyPokemon.hp} | " +
-            $"Tipo: {enemyPokemon.type}"
+            $"HP: {enemyCurrentHP}/{enemyPokemon.hp} | Tipo: {enemyPokemon.type}"
         );
 
         // El jugador empieza
         currentState = BattleState.PlayerTurn;
 
-        Debug.Log(
-            $"Turno del jugador: {playerPokemon.name}"
-        );
-
-        // Mostrar ataques del jugador
-        if (playerPokemon.attacks != null)
-        {
-            Debug.Log("Ataques disponibles:");
-
-            for (int i = 0; i < playerPokemon.attacks.Length; i++)
-            {
-                Move move = playerPokemon.attacks[i];
-
-                Debug.Log(
-                    $"[{i}] {move.name} | " +
-                    $"Daño: {move.damage}"
-                );
-            }
-        }
+        Debug.Log($"Turno del jugador: {playerPokemon.name}");
 
         UpdateBattleUI();
-        UpdateAttackButtons();
     }
 
 
     // =========================================================
-    // PLAYER ATTACK
+    // PLAYER ATTACK (llamado por los botones)
     // =========================================================
 
     public void PlayerAttack(int moveIndex)
     {
         if (currentState != BattleState.PlayerTurn)
         {
-            Debug.LogWarning(
-                "No es el turno del jugador."
-            );
-
+            Debug.LogWarning("No es el turno del jugador.");
             return;
         }
 
-        if (playerPokemon == null ||
-            enemyPokemon == null)
+        if (playerPokemon == null || enemyPokemon == null)
         {
-            Debug.LogWarning(
-                "Todavía no hay dos Pokémon en combate."
-            );
-
+            Debug.LogWarning("Todavía no hay dos Pokémon en combate.");
             return;
         }
 
-        if (playerPokemon.attacks == null ||
-            playerPokemon.attacks.Length == 0)
+        if (playerPokemon.attacks == null || playerPokemon.attacks.Length == 0)
         {
-            Debug.LogWarning(
-                "El Pokémon del jugador no tiene ataques."
-            );
-
+            Debug.LogWarning("El Pokémon del jugador no tiene ataques.");
             return;
         }
 
-        if (moveIndex < 0 ||
-            moveIndex >= playerPokemon.attacks.Length)
+        if (moveIndex < 0 || moveIndex >= playerPokemon.attacks.Length)
         {
-            Debug.LogWarning(
-                "Índice de ataque inválido."
-            );
-
+            Debug.LogWarning("Índice de ataque inválido.");
             return;
         }
 
-        Move move = playerPokemon.attacks[moveIndex];
-
-        Debug.Log(
-            $"{playerPokemon.name} usa {move.name}!"
-        );
-
-        int damage = CalculatePlayerDamage(move);
-
-        enemyCurrentHP -= damage;
-
-        if (enemyCurrentHP < 0)
-            enemyCurrentHP = 0;
-
-        Debug.Log(
-            $"{enemyPokemon.name} recibe {damage} de daño."
-        );
-
-        Debug.Log(
-            $"HP de {enemyPokemon.name}: " +
-            $"{enemyCurrentHP}/{enemyPokemon.hp}"
-        );
-
+        // Bloquea los botones mientras dura la animación
+        currentState = BattleState.Resolving;
         UpdateBattleUI();
 
-        // El enemigo ha sido derrotado
-        if (enemyCurrentHP <= 0)
-        {
-            EndBattle(true);
-            return;
-        }
-
-        // Empieza el turno enemigo
-        currentState = BattleState.EnemyTurn;
-
-        UpdateAttackButtons();
-
-        EnemyTurn();
+        StartCoroutine(AttackRoutine(true, moveIndex));
     }
 
 
     // =========================================================
-    // PLAYER DAMAGE
+    // ATTACK ROUTINE (la usan jugador y enemigo)
     // =========================================================
 
-    private int CalculatePlayerDamage(Move move)
+    private IEnumerator AttackRoutine(bool playerIsAttacker, int moveIndex)
     {
-        if (move == null)
-            return 0;
+        Pokemon attacker = playerIsAttacker ? playerPokemon : enemyPokemon;
+        Pokemon defender = playerIsAttacker ? enemyPokemon : playerPokemon;
 
-        int damage = move.damage;
+        Animator attackerAnimator = playerIsAttacker ? playerAnimator : enemyAnimator;
+        Animator defenderAnimator = playerIsAttacker ? enemyAnimator : playerAnimator;
 
-        Debug.Log(
-            $"Daño base de {move.name}: {damage}"
-        );
+        Move move = attacker.attacks[moveIndex];
 
-        // -----------------------------------------------------
-        // DEBILIDAD
-        // -----------------------------------------------------
+        Debug.Log($"{attacker.name} usa {move.name}!");
 
-        if (enemyPokemon.weakness != null)
+        PlayTrigger(attackerAnimator, GetAttackTrigger(moveIndex));
+
+        yield return new WaitForSeconds(attackHitDelay);
+
+        int damage = CalculateDamage(attacker, defender, move, true);
+
+        if (playerIsAttacker)
+            enemyCurrentHP = Mathf.Max(0, enemyCurrentHP - damage);
+        else
+            playerCurrentHP = Mathf.Max(0, playerCurrentHP - damage);
+
+        int defenderHP = playerIsAttacker ? enemyCurrentHP : playerCurrentHP;
+
+        Debug.Log($"{defender.name} recibe {damage} de daño.");
+        Debug.Log($"HP de {defender.name}: {defenderHP}/{defender.hp}");
+
+        UpdateHealthBars();
+        UpdateBattleUI();
+
+        if (defenderHP <= 0)
         {
-            if (string.Equals(
-                playerPokemon.type,
-                enemyPokemon.weakness.type,
-                StringComparison.OrdinalIgnoreCase))
+            PlayTrigger(defenderAnimator, TriggerDeath);
+
+            yield return new WaitForSeconds(deathDuration);
+
+            PokemonCapture defenderCapture = playerIsAttacker ? enemyCapture : playerCapture;
+
+            if (defenderCapture != null)
             {
-                damage += enemyPokemon.weakness.value;
+                defenderCapture.Capture(defeatEffectDuration);
 
-                Debug.Log(
-                    $"¡Es súper efectivo! " +
-                    $"+{enemyPokemon.weakness.value} de daño."
-                );
+                yield return new WaitUntil(() =>
+                    defenderCapture == null || defenderCapture.IsCaptured);
             }
+
+            EndBattle(playerIsAttacker);
+            yield break;
         }
+        if (damage > 0)
+            PlayTrigger(defenderAnimator, TriggerDamage);
 
+        yield return new WaitForSeconds(hitReactionDuration);
 
-        // -----------------------------------------------------
-        // RESISTENCIA
-        // -----------------------------------------------------
-
-        if (enemyPokemon.resistance != null)
+        if (playerIsAttacker)
         {
-            if (string.Equals(
-                playerPokemon.type,
-                enemyPokemon.resistance.type,
-                StringComparison.OrdinalIgnoreCase))
-            {
-                damage -= enemyPokemon.resistance.value;
+            currentState = BattleState.EnemyTurn;
+            UpdateBattleUI();
 
-                Debug.Log(
-                    $"El ataque es poco efectivo. " +
-                    $"-{enemyPokemon.resistance.value} de daño."
-                );
-            }
+            yield return new WaitForSeconds(enemyThinkDelay);
+
+            StartEnemyTurn();
         }
+        else
+        {
+            currentState = BattleState.PlayerTurn;
+            UpdateBattleUI();
 
-
-        if (damage < 0)
-            damage = 0;
-
-        return damage;
+            Debug.Log($"Turno del jugador: {playerPokemon.name}");
+        }
     }
 
 
@@ -436,69 +456,43 @@ public class BattleManager : MonoBehaviour
     // ENEMY TURN
     // =========================================================
 
-    private void EnemyTurn()
+    private void StartEnemyTurn()
     {
         if (currentState != BattleState.EnemyTurn)
             return;
 
-        if (enemyCurrentHP <= 0)
-            return;
+        Debug.Log($"Turno del rival: {enemyPokemon.name}");
 
-        Debug.Log(
-            $"Turno del rival: {enemyPokemon.name}"
-        );
-
-        if (enemyPokemon.attacks == null ||
-            enemyPokemon.attacks.Length == 0)
+        if (enemyPokemon.attacks == null || enemyPokemon.attacks.Length == 0)
         {
-            Debug.LogWarning(
-                "El rival no tiene ataques."
-            );
+            Debug.LogWarning("El rival no tiene ataques.");
 
             currentState = BattleState.PlayerTurn;
-
-            UpdateAttackButtons();
-
+            UpdateBattleUI();
             return;
         }
 
-        // La IA elige el mejor ataque
         int selectedMoveIndex = ChooseBestEnemyMove();
 
-        Move selectedMove =
-            enemyPokemon.attacks[selectedMoveIndex];
+        Debug.Log($"La IA ha elegido: {enemyPokemon.attacks[selectedMoveIndex].name}");
 
-        Debug.Log(
-            $"La IA ha elegido: {selectedMove.name}"
-        );
+        currentState = BattleState.Resolving;
+        UpdateBattleUI();
 
-        // Ejecutar ataque
-        ExecuteEnemyAttack(selectedMove);
+        StartCoroutine(AttackRoutine(false, selectedMoveIndex));
     }
-
-
-    // =========================================================
-    // ENEMY AI
-    // =========================================================
 
     private int ChooseBestEnemyMove()
     {
         int bestMoveIndex = 0;
         int bestDamage = -1;
 
-        for (int i = 0;
-             i < enemyPokemon.attacks.Length;
-             i++)
+        for (int i = 0; i < enemyPokemon.attacks.Length; i++)
         {
             Move move = enemyPokemon.attacks[i];
 
-            int estimatedDamage =
-                CalculateEnemyDamage(move);
-
-            Debug.Log(
-                $"IA analiza {move.name}: " +
-                $"daño estimado = {estimatedDamage}"
-            );
+            // Sin logs: es solo una estimación
+            int estimatedDamage = CalculateDamage(enemyPokemon, playerPokemon, move, false);
 
             if (estimatedDamage > bestDamage)
             {
@@ -512,268 +506,159 @@ public class BattleManager : MonoBehaviour
 
 
     // =========================================================
-    // EXECUTE ENEMY ATTACK
+    // DAMAGE (jugador y enemigo comparten la misma fórmula)
     // =========================================================
 
-    private void ExecuteEnemyAttack(Move move)
+    private int CalculateDamage(Pokemon attacker, Pokemon defender, Move move, bool log)
     {
-        Debug.Log(
-            $"{enemyPokemon.name} usa {move.name}!"
-        );
-
-        int damage = CalculateEnemyDamage(move);
-
-        playerCurrentHP -= damage;
-
-        if (playerCurrentHP < 0)
-            playerCurrentHP = 0;
-
-        Debug.Log(
-            $"{playerPokemon.name} recibe {damage} de daño."
-        );
-
-        Debug.Log(
-            $"HP de {playerPokemon.name}: " +
-            $"{playerCurrentHP}/{playerPokemon.hp}"
-        );
-
-        UpdateBattleUI();
-
-        // El jugador ha sido derrotado
-        if (playerCurrentHP <= 0)
-        {
-            EndBattle(false);
-            return;
-        }
-
-        // Volvemos al turno del jugador
-        currentState = BattleState.PlayerTurn;
-
-        UpdateAttackButtons();
-
-        Debug.Log(
-            $"Turno del jugador: {playerPokemon.name}"
-        );
-    }
-
-
-    // =========================================================
-    // ENEMY DAMAGE
-    // =========================================================
-
-    private int CalculateEnemyDamage(Move move)
-    {
-        if (move == null)
+        if (move == null || attacker == null || defender == null)
             return 0;
 
         int damage = move.damage;
 
-        Debug.Log(
-            $"Daño base de {move.name}: {damage}"
-        );
+        if (log)
+            Debug.Log($"Daño base de {move.name}: {damage}");
 
-
-        // -----------------------------------------------------
-        // DEBILIDAD DEL JUGADOR
-        // -----------------------------------------------------
-
-        if (playerPokemon.weakness != null)
+        // Debilidad
+        if (defender.weakness != null &&
+            !string.IsNullOrEmpty(defender.weakness.type) &&
+            string.Equals(attacker.type, defender.weakness.type, StringComparison.OrdinalIgnoreCase))
         {
-            if (string.Equals(
-                enemyPokemon.type,
-                playerPokemon.weakness.type,
-                StringComparison.OrdinalIgnoreCase))
-            {
-                damage += playerPokemon.weakness.value;
+            damage += defender.weakness.value;
 
-                Debug.Log(
-                    $"¡Es súper efectivo! " +
-                    $"+{playerPokemon.weakness.value} de daño."
-                );
-            }
+            if (log)
+                Debug.Log($"¡Es súper efectivo! +{defender.weakness.value} de daño.");
         }
 
-
-        // -----------------------------------------------------
-        // RESISTENCIA DEL JUGADOR
-        // -----------------------------------------------------
-
-        if (playerPokemon.resistance != null)
+        // Resistencia
+        if (defender.resistance != null &&
+            !string.IsNullOrEmpty(defender.resistance.type) &&
+            string.Equals(attacker.type, defender.resistance.type, StringComparison.OrdinalIgnoreCase))
         {
-            if (string.Equals(
-                enemyPokemon.type,
-                playerPokemon.resistance.type,
-                StringComparison.OrdinalIgnoreCase))
-            {
-                damage -= playerPokemon.resistance.value;
+            damage -= defender.resistance.value;
 
-                Debug.Log(
-                    $"El ataque es poco efectivo. " +
-                    $"-{playerPokemon.resistance.value} de daño."
-                );
-            }
+            if (log)
+                Debug.Log($"El ataque es poco efectivo. -{defender.resistance.value} de daño.");
         }
 
-
-        if (damage < 0)
-            damage = 0;
-
-        return damage;
+        return Mathf.Max(0, damage);
     }
 
 
     // =========================================================
-    // UPDATE UI
+    // UI
     // =========================================================
 
     private void UpdateBattleUI()
     {
-        // -----------------------------------------------------
-        // PLAYER
-        // -----------------------------------------------------
+        // Jugador
+        if (playerNameText != null)
+            playerNameText.text = playerPokemon != null ? playerPokemon.name : "";
 
-        if (playerPokemon != null)
-        {
-            if (playerNameText != null)
-            {
-                playerNameText.text =
-                    playerPokemon.name;
-            }
+        if (playerHPText != null)
+            playerHPText.text = playerPokemon != null
+                ? $"HP: {playerCurrentHP}/{playerPokemon.hp}"
+                : "";
 
-            if (playerHPText != null)
-            {
-                playerHPText.text =
-                    $"HP: {playerCurrentHP}/{playerPokemon.hp}";
-            }
-        }
+        // Enemigo
+        if (enemyNameText != null)
+            enemyNameText.text = enemyPokemon != null ? enemyPokemon.name : "";
 
+        if (enemyHPText != null)
+            enemyHPText.text = enemyPokemon != null
+                ? $"HP: {enemyCurrentHP}/{enemyPokemon.hp}"
+                : "";
 
-        // -----------------------------------------------------
-        // ENEMY
-        // -----------------------------------------------------
+        // Botones de ataque con el nombre de cada movimiento
+        SetupAttackButton(attackButton1, attackButton1TMP, 0);
+        SetupAttackButton(attackButton2, attackButton2TMP, 1);
 
-        if (enemyPokemon != null)
-        {
-            if (enemyNameText != null)
-            {
-                enemyNameText.text =
-                    enemyPokemon.name;
-            }
-
-            if (enemyHPText != null)
-            {
-                enemyHPText.text =
-                    $"HP: {enemyCurrentHP}/{enemyPokemon.hp}";
-            }
-        }
-
-
-        // -----------------------------------------------------
-        // ATTACK 1
-        // -----------------------------------------------------
-
-        if (playerPokemon != null &&
-            playerPokemon.attacks != null)
-        {
-            if (playerPokemon.attacks.Length > 0)
-            {
-                if (attackButton1 != null)
-                {
-                    attackButton1.gameObject.SetActive(true);
-                }
-
-                if (attackButton1Text != null)
-                {
-                    attackButton1Text.text =
-                        playerPokemon.attacks[0].name;
-                }
-            }
-            else
-            {
-                if (attackButton1 != null)
-                {
-                    attackButton1.gameObject.SetActive(false);
-                }
-            }
-
-
-            // -------------------------------------------------
-            // ATTACK 2
-            // -------------------------------------------------
-
-            if (playerPokemon.attacks.Length > 1)
-            {
-                if (attackButton2 != null)
-                {
-                    attackButton2.gameObject.SetActive(true);
-                }
-
-                if (attackButton2Text != null)
-                {
-                    attackButton2Text.text =
-                        playerPokemon.attacks[1].name;
-                }
-            }
-            else
-            {
-                if (attackButton2 != null)
-                {
-                    attackButton2.gameObject.SetActive(false);
-                }
-            }
-        }
-
-        UpdateAttackButtons();
+        // Botón de reinicio: solo cuando acaba el combate
+        if (resetButton != null)
+            resetButton.gameObject.SetActive(currentState == BattleState.BattleOver);
     }
 
-
-    // =========================================================
-    // ATTACK BUTTONS
-    // =========================================================
-
-    private void UpdateAttackButtons()
+    private void SetupAttackButton(Button button, TMP_Text tmpLabel, int attackIndex)
     {
-        bool canAttack =
-            currentState == BattleState.PlayerTurn &&
+        if (button == null)
+            return;
+
+        bool hasAttack =
             playerPokemon != null &&
+            playerPokemon.attacks != null &&
+            attackIndex < playerPokemon.attacks.Length;
+
+        button.gameObject.SetActive(hasAttack);
+
+        // Si el texto NO es hijo del botón, hay que ocultarlo a mano
+        if (tmpLabel != null)
+            tmpLabel.gameObject.SetActive(hasAttack);
+
+        if (!hasAttack)
+            return;
+
+        SetButtonLabel(button, tmpLabel, playerPokemon.attacks[attackIndex].name);
+
+        button.interactable =
+            currentState == BattleState.PlayerTurn &&
             enemyPokemon != null;
+    }
 
-        if (attackButton1 != null)
-        {
-            attackButton1.interactable =
-                canAttack;
-        }
+    // Usa el TMP asignado en el Inspector; si no hay, busca uno dentro del botón
+    private void SetButtonLabel(Button button, TMP_Text tmpLabel, string label)
+    {
+        if (tmpLabel == null)
+            tmpLabel = button.GetComponentInChildren<TMP_Text>(true);
 
-        if (attackButton2 != null)
-        {
-            attackButton2.interactable =
-                canAttack;
-        }
+        if (tmpLabel != null)
+            tmpLabel.text = label;
+        else
+            Debug.LogWarning($"No se ha encontrado ningún TMP_Text para el botón '{button.name}'.");
     }
 
 
     // =========================================================
-    // END BATTLE
+    // END / RESET
     // =========================================================
 
     private void EndBattle(bool playerWon)
     {
         currentState = BattleState.BattleOver;
 
-        UpdateAttackButtons();
+        UpdateBattleUI();
 
         Debug.Log("================================");
-
-        if (playerWon)
-        {
-            Debug.Log("          ¡VICTORIA!");
-        }
-        else
-        {
-            Debug.Log("           DERROTA");
-        }
-
+        Debug.Log(playerWon ? "          ¡VICTORIA!" : "           DERROTA");
         Debug.Log("================================");
+    }
+
+    public void ResetBattle()
+    {
+        StopAllCoroutines();
+
+        // Limpia los animators antes de que ResetCards desactive los objetos
+        ResetAnimator(playerAnimator);
+        ResetAnimator(enemyAnimator);
+
+        playerPokemon = null;
+        enemyPokemon = null;
+        playerCurrentHP = 0;
+        enemyCurrentHP = 0;
+        playerHealthBar = null;
+        enemyHealthBar = null;
+        playerAnimator = null;
+        enemyAnimator = null;
+        playerCapture = null;
+        enemyCapture = null;
+
+        currentState = BattleState.WaitingForPlayer;
+
+        if (trackingManager != null)
+            trackingManager.ResetCards();
+
+        UpdateBattleUI();
+
+        Debug.Log("Combate reiniciado. Escanea la carta del jugador.");
     }
 
 
@@ -781,34 +666,11 @@ public class BattleManager : MonoBehaviour
     // GETTERS
     // =========================================================
 
-    public Pokemon GetPlayerPokemon()
-    {
-        return playerPokemon;
-    }
-
-
-    public Pokemon GetEnemyPokemon()
-    {
-        return enemyPokemon;
-    }
-
-
-    public int GetPlayerHP()
-    {
-        return playerCurrentHP;
-    }
-
-
-    public int GetEnemyHP()
-    {
-        return enemyCurrentHP;
-    }
-
-
-    public BattleState GetCurrentState()
-    {
-        return currentState;
-    }
+    public Pokemon GetPlayerPokemon() { return playerPokemon; }
+    public Pokemon GetEnemyPokemon() { return enemyPokemon; }
+    public int GetPlayerHP() { return playerCurrentHP; }
+    public int GetEnemyHP() { return enemyCurrentHP; }
+    public BattleState GetCurrentState() { return currentState; }
 }
 
 
@@ -821,7 +683,6 @@ public class PokemonDatabase
 {
     public Pokemon[] pokemon;
 }
-
 
 [Serializable]
 public class Pokemon
@@ -837,7 +698,6 @@ public class Pokemon
     public Resistance resistance;
 }
 
-
 [Serializable]
 public class Move
 {
@@ -845,14 +705,12 @@ public class Move
     public int damage;
 }
 
-
 [Serializable]
 public class Weakness
 {
     public string type;
     public int value;
 }
-
 
 [Serializable]
 public class Resistance

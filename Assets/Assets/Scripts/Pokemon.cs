@@ -25,6 +25,9 @@ public class PokemonCapture : MonoBehaviour
 
     public bool IsCaptured { get; private set; }
     public bool IsBeingCaptured { get; private set; }
+
+    public bool IsPlayingEffect { get; private set; }
+
     public int CurrentHP => currentHP;
     public int MaxHP => maxHP;
     public string PokemonName => string.IsNullOrWhiteSpace(pokemonName) ? name : pokemonName;
@@ -50,6 +53,7 @@ public class PokemonCapture : MonoBehaviour
         public Material mat;
         public int colorId;
         public Color baseColor;
+        public Color baseEmission;
     }
 
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
@@ -59,6 +63,10 @@ public class PokemonCapture : MonoBehaviour
     private Renderer[] renderers;
     private Collider[] colliders;
     private readonly List<TintMat> tints = new List<TintMat>();
+
+    private readonly Dictionary<Renderer, Material[]> originalMaterials =
+        new Dictionary<Renderer, Material[]>();
+
     private Material fallbackRed;
 
     void Awake()
@@ -79,6 +87,14 @@ public class PokemonCapture : MonoBehaviour
     {
         renderers = GetComponentsInChildren<Renderer>(true);
         colliders = GetComponentsInChildren<Collider>(true);
+    }
+
+    public void SetFullHealth()
+    {
+        currentHP = maxHP;
+
+        if (healthBar != null)
+            healthBar.SetHealthInstant(currentHP, maxHP);
     }
 
     public void Heal(int amount)
@@ -147,6 +163,93 @@ public class PokemonCapture : MonoBehaviour
         onCaptured?.Invoke();
     }
 
+
+    public void PlayDisappear(float duration)
+    {
+        if (IsCaptured || IsBeingCaptured || IsPlayingEffect) return;
+
+        IsPlayingEffect = true;
+        StartCoroutine(DisappearRoutine(Mathf.Max(0.1f, duration)));
+    }
+
+    public void PlayAppear(float duration, Vector3 targetScale)
+    {
+        if (IsCaptured || IsBeingCaptured || IsPlayingEffect) return;
+
+        IsPlayingEffect = true;
+        StartCoroutine(AppearRoutine(Mathf.Max(0.1f, duration), targetScale));
+    }
+
+    private IEnumerator DisappearRoutine(float duration)
+    {
+        RefreshChildren();
+
+        foreach (var c in colliders) c.enabled = false;
+        if (healthBar != null) healthBar.SetVisible(false);
+
+        float redTime = Mathf.Max(0.01f, Mathf.Min(redFadeDuration, duration * 0.6f));
+        float shrinkTime = Mathf.Max(0.05f, duration - redTime);
+
+        PrepareRed();
+
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / redTime;
+            ApplyRed(Mathf.Clamp01(t));
+            yield return null;
+        }
+        ApplyRed(1f);
+
+        Vector3 startScale = transform.localScale;
+        t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / shrinkTime;
+            float e = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t));
+            transform.localScale = Vector3.Lerp(startScale, Vector3.zero, e);
+            yield return null;
+        }
+
+        transform.localScale = Vector3.zero;
+        IsPlayingEffect = false;
+    }
+
+    private IEnumerator AppearRoutine(float duration, Vector3 targetScale)
+    {
+        float redTime = Mathf.Max(0.01f, Mathf.Min(redFadeDuration, duration * 0.6f));
+        float growTime = Mathf.Max(0.05f, duration - redTime);
+
+        ApplyRed(1f);
+        transform.localScale = Vector3.zero;
+
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / growTime;
+            float e = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t));
+            transform.localScale = Vector3.Lerp(Vector3.zero, targetScale, e);
+            yield return null;
+        }
+        transform.localScale = targetScale;
+
+        t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / redTime;
+            ApplyRed(1f - Mathf.Clamp01(t));
+            yield return null;
+        }
+        ApplyRed(0f);
+
+        RestoreMaterials();
+
+        foreach (var c in colliders) if (c != null) c.enabled = true;
+        if (healthBar != null) healthBar.SetVisible(true);
+
+        IsPlayingEffect = false;
+    }
+
     private Material GetFallbackRed()
     {
         if (fallbackRed != null) return fallbackRed;
@@ -168,12 +271,16 @@ public class PokemonCapture : MonoBehaviour
     private void PrepareRed()
     {
         tints.Clear();
+        originalMaterials.Clear();
 
         if (redMaterial != null)
         {
             foreach (var r in renderers)
             {
                 if (r == null || r is ParticleSystemRenderer) continue;
+
+                originalMaterials[r] = r.sharedMaterials;
+
                 var arr = new Material[r.sharedMaterials.Length];
                 for (int i = 0; i < arr.Length; i++) arr[i] = redMaterial;
                 r.sharedMaterials = arr;
@@ -186,6 +293,7 @@ public class PokemonCapture : MonoBehaviour
             if (r == null || r is ParticleSystemRenderer) continue;
 
             Material[] mats = r.materials;
+            originalMaterials[r] = (Material[])mats.Clone();
             bool changed = false;
 
             for (int i = 0; i < mats.Length; i++)
@@ -209,7 +317,8 @@ public class PokemonCapture : MonoBehaviour
                 {
                     mat = m,
                     colorId = id,
-                    baseColor = m.GetColor(id)
+                    baseColor = m.GetColor(id),
+                    baseEmission = m.HasProperty(EmissionId) ? m.GetColor(EmissionId) : Color.black
                 });
             }
 
@@ -225,8 +334,20 @@ public class PokemonCapture : MonoBehaviour
             if (tm.colorId != -1)
                 tm.mat.SetColor(tm.colorId, Color.Lerp(tm.baseColor, redColor, k));
             if (tm.mat.HasProperty(EmissionId))
-                tm.mat.SetColor(EmissionId, redColor * (emissionIntensity * k));
+                tm.mat.SetColor(EmissionId, Color.Lerp(tm.baseEmission, redColor * emissionIntensity, k));
         }
+    }
+
+    private void RestoreMaterials()
+    {
+        foreach (var pair in originalMaterials)
+        {
+            if (pair.Key != null)
+                pair.Key.sharedMaterials = pair.Value;
+        }
+
+        originalMaterials.Clear();
+        tints.Clear();
     }
 
     void LateUpdate()

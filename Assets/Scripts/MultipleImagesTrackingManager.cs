@@ -8,6 +8,9 @@ public class MultipleImagesTrackingManager : MonoBehaviour
     [SerializeField] private List<GameObject> prefabsToSpawn = new List<GameObject>();
     [SerializeField] private BattleManager battleManager;
 
+    [Tooltip("Opcional: mueve los Pokémon a los sockets del estadio al tocarlos")]
+    [SerializeField] private StadiumPlacement stadium;
+
     private ARTrackedImageManager _trackedImageManager;
 
     private Dictionary<string, GameObject> _arObjects;
@@ -40,11 +43,7 @@ public class MultipleImagesTrackingManager : MonoBehaviour
     {
         foreach (var prefab in prefabsToSpawn)
         {
-            var arObject = Instantiate(
-                prefab,
-                Vector3.zero,
-                Quaternion.identity
-            );
+            var arObject = Instantiate(prefab, Vector3.zero, Quaternion.identity);
 
             arObject.name = prefab.name;
             arObject.SetActive(false);
@@ -53,8 +52,7 @@ public class MultipleImagesTrackingManager : MonoBehaviour
         }
     }
 
-    private void OnImagesTrackedChanged(
-        ARTrackablesChangedEventArgs<ARTrackedImage> eventArgs)
+    private void OnImagesTrackedChanged(ARTrackablesChangedEventArgs<ARTrackedImage> eventArgs)
     {
         foreach (var trackedImage in eventArgs.added)
         {
@@ -79,22 +77,42 @@ public class MultipleImagesTrackingManager : MonoBehaviour
 
         if (trackedImage.trackingState == TrackingState.Tracking)
         {
-            // Actualizar posición y rotación del Pokémon
             arObject.SetActive(true);
 
-            arObject.transform.position =
-                trackedImage.transform.position;
+            bool lockedToStadium = stadium != null && stadium.IsLocked(imageName);
 
-            arObject.transform.rotation =
-                trackedImage.transform.rotation;
+            if (!lockedToStadium)
+            {
+                arObject.transform.position = trackedImage.transform.position;
+                arObject.transform.rotation = trackedImage.transform.rotation;
+            }
 
-            // Registrar la carta solamente una vez
             if (!_registeredCards.Contains(imageName))
             {
                 _registeredCards.Add(imageName);
 
-                battleManager.RegisterCard(imageName);
+                if (stadium != null)
+                    stadium.RegisterCard(imageName, arObject);
+
+                battleManager.RegisterCard(imageName, arObject);
             }
         }
+    }
+
+    public void ResetCards()
+    {
+        _registeredCards.Clear();
+
+        if (stadium != null)
+            stadium.ResetStadium();
+        foreach (var arObject in _arObjects.Values)
+        {
+            if (arObject != null)
+                Destroy(arObject);
+        }
+
+        _arObjects.Clear();
+
+        SetupSceneElements();
     }
 }
