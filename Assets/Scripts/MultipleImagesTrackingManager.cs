@@ -8,7 +8,6 @@ public class MultipleImagesTrackingManager : MonoBehaviour
     [SerializeField] private List<GameObject> prefabsToSpawn = new List<GameObject>();
     [SerializeField] private BattleManager battleManager;
 
-    [Tooltip("Opcional: mueve los Pokémon a los sockets del estadio al tocarlos")]
     [SerializeField] private StadiumPlacement stadium;
 
     private ARTrackedImageManager _trackedImageManager;
@@ -92,9 +91,13 @@ public class MultipleImagesTrackingManager : MonoBehaviour
                 _registeredCards.Add(imageName);
 
                 if (stadium != null)
+                {
                     stadium.RegisterCard(imageName, arObject);
-
-                battleManager.RegisterCard(imageName, arObject);
+                }
+                else if (battleManager != null)
+                {
+                    battleManager.RegisterCard(imageName, arObject);
+                }
             }
         }
     }
@@ -105,6 +108,7 @@ public class MultipleImagesTrackingManager : MonoBehaviour
 
         if (stadium != null)
             stadium.ResetStadium();
+
         foreach (var arObject in _arObjects.Values)
         {
             if (arObject != null)

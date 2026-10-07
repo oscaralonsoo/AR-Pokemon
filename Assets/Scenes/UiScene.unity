@@ -119,6 +119,17 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &9128417 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6855856974919555037, guid: 635f850f02783974eacd251c4da3dd76, type: 3}
+  m_PrefabInstance: {fileID: 1732366483}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!114 &54353915 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4417896308636390316, guid: 635f850f02783974eacd251c4da3dd76, type: 3}
@@ -973,8 +984,9 @@ MonoBehaviour:
   attackButton2: {fileID: 2028392195}
   attackButton1TMP: {fileID: 1214858406}
   attackButton2TMP: {fileID: 837851828}
-  resetButton: {fileID: 0}
+  resetButton: {fileID: 9128417}
   trackingManager: {fileID: 0}
+  stadium: {fileID: 1340727109}
   attackHitDelay: 0.6
   hitReactionDuration: 0.8
   deathDuration: 2

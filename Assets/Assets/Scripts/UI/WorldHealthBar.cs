@@ -10,8 +10,6 @@ public class WorldHealthBar : MonoBehaviour
     [SerializeField] private TMP_Text nameText;
 
     [Header("Ajustes")]
-    [Tooltip("Segundos que tardaría en vaciarse una barra completa. " +
-             "Más alto = la vida baja más despacio")]
     [SerializeField] private float fullBarSeconds = 2f;
     [SerializeField] private bool yawOnly = false;
 

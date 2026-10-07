@@ -1,19 +1,43 @@
-using System.Collections;
+ï»¿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PokemonSpawnEffect : MonoBehaviour
 {
+    [Header("PartÃ­culas")]
     [SerializeField] private GameObject spawnParticle;
-    [SerializeField] private Material whiteMaterial;
-    [SerializeField] private float duration = 1f;
     [SerializeField] private float particleFadeDuration = 0.5f;
+
+    [Header("ApariciÃ³n (inverso de la captura, en blanco)")]
+    [SerializeField] private float duration = 1f;
     [SerializeField] private AnimationCurve scaleCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [SerializeField] private Transform originPoint;
+
+    [Header("Fundido blanco")]
+    [SerializeField] private Color whiteColor = Color.white;
+    [SerializeField] private float emissionIntensity = 2f;
+    [SerializeField] private AnimationCurve whiteAmountCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+
+    private struct TintMat
+    {
+        public Material mat;
+        public int colorId;
+        public Color baseColor;
+        public Color baseEmission;
+    }
+
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    private static readonly int ColorId = Shader.PropertyToID("_Color");
+    private static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
 
     private Vector3 originalScale;
+    private Vector3 endPosition;
     private Coroutine effectRoutine;
 
     private Renderer[] renderers;
     private Material[][] originalMaterials;
+    private readonly List<Material> instancedMaterials = new List<Material>();
+    private readonly List<TintMat> tints = new List<TintMat>();
 
     private GameObject particleInstance;
     private ParticleSystem[] particleSystems;
@@ -33,7 +57,8 @@ public class PokemonSpawnEffect : MonoBehaviour
 
     private void OnEnable()
     {
-        // Cada vez que se activa el GO se crea una partícula nueva
+        endPosition = transform.position;
+
         SpawnParticle();
 
         if (effectRoutine != null) StopCoroutine(effectRoutine);
@@ -42,8 +67,8 @@ public class PokemonSpawnEffect : MonoBehaviour
 
     private void OnDisable()
     {
-        // Al desactivar el GO se limpia todo y se destruye la partícula
         transform.localScale = originalScale;
+        if (originPoint != null) transform.position = endPosition;
         RestoreMaterials();
         DestroyParticle();
         effectRoutine = null;
@@ -51,32 +76,112 @@ public class PokemonSpawnEffect : MonoBehaviour
 
     private IEnumerator SpawnRoutine()
     {
-        // 1) Crece el GO con material blanco mientras la partícula está activa
-        float elapsed = 0f;
-        transform.localScale = Vector3.zero;
-        SetWhiteMaterial();
+        float safeDuration = Mathf.Max(0.05f, duration);
 
-        while (elapsed < duration)
+        PrepareTint();
+        ApplyTint(whiteAmountCurve.Evaluate(0f));
+
+        Vector3 startPos = originPoint != null ? originPoint.position : endPosition;
+        transform.localScale = Vector3.zero;
+        transform.position = startPos;
+
+        float elapsed = 0f;
+        while (elapsed < safeDuration)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+
             transform.localScale = originalScale * scaleCurve.Evaluate(t);
+
+            if (originPoint != null)
+                transform.position = Vector3.Lerp(startPos, endPosition, Mathf.SmoothStep(0f, 1f, t));
+
+            ApplyTint(Mathf.Clamp01(whiteAmountCurve.Evaluate(t)));
             SyncParticle();
             yield return null;
         }
 
         transform.localScale = originalScale;
+        transform.position = endPosition;
+
+        ApplyTint(0f);
         RestoreMaterials();
 
-        // 2) Desvanece y destruye la partícula
         yield return FadeOutParticle();
 
         effectRoutine = null;
     }
 
+    private void PrepareTint()
+    {
+        RestoreMaterials();
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer r = renderers[i];
+            if (r == null || r is ParticleSystemRenderer) continue;
+
+            Material[] mats = r.materials;
+            for (int j = 0; j < mats.Length; j++)
+            {
+                Material m = mats[j];
+                if (m == null) continue;
+
+                instancedMaterials.Add(m);
+
+                int id = m.HasProperty(BaseColorId) ? BaseColorId
+                       : m.HasProperty(ColorId) ? ColorId : -1;
+                if (id == -1) continue;
+
+                if (m.HasProperty(EmissionId)) m.EnableKeyword("_EMISSION");
+
+                tints.Add(new TintMat
+                {
+                    mat = m,
+                    colorId = id,
+                    baseColor = m.GetColor(id),
+                    baseEmission = m.HasProperty(EmissionId) ? m.GetColor(EmissionId) : Color.black
+                });
+            }
+        }
+    }
+
+    private void ApplyTint(float k)
+    {
+        foreach (var tm in tints)
+        {
+            if (tm.mat == null) continue;
+
+            tm.mat.SetColor(tm.colorId, Color.Lerp(tm.baseColor, whiteColor, k));
+
+            if (tm.mat.HasProperty(EmissionId))
+                tm.mat.SetColor(EmissionId, Color.Lerp(tm.baseEmission, whiteColor * emissionIntensity, k));
+        }
+    }
+
+    private void RestoreMaterials()
+    {
+        if (renderers == null) return;
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] != null)
+            {
+                renderers[i].sharedMaterials = originalMaterials[i];
+            }
+        }
+
+        foreach (var m in instancedMaterials)
+        {
+            if (m != null) Destroy(m);
+        }
+
+        instancedMaterials.Clear();
+        tints.Clear();
+    }
+
     private void SpawnParticle()
     {
-        // Por si quedara una instancia anterior
         DestroyParticle();
 
         if (spawnParticle == null)
@@ -85,7 +190,6 @@ public class PokemonSpawnEffect : MonoBehaviour
             return;
         }
 
-        // Sin padre, para que no le afecte la escala del GO
         particleInstance = Instantiate(spawnParticle, transform.position, transform.rotation);
         particleSystems = particleInstance.GetComponentsInChildren<ParticleSystem>(true);
 
@@ -105,7 +209,6 @@ public class PokemonSpawnEffect : MonoBehaviour
     {
         if (particleInstance == null) yield break;
 
-        // Deja de emitir partículas nuevas; las existentes siguen vivas mientras se desvanecen
         foreach (var ps in particleSystems)
         {
             ps.Stop(false, ParticleSystemStopBehavior.StopEmitting);
@@ -154,38 +257,5 @@ public class PokemonSpawnEffect : MonoBehaviour
 
         particleInstance = null;
         particleSystems = null;
-    }
-
-    private void SetWhiteMaterial()
-    {
-        if (whiteMaterial == null)
-        {
-            Debug.LogWarning("No hay un material asignado en White Material.", this);
-            return;
-        }
-
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            Material[] whites = new Material[originalMaterials[i].Length];
-            for (int j = 0; j < whites.Length; j++)
-            {
-                whites[j] = whiteMaterial;
-            }
-
-            renderers[i].sharedMaterials = whites;
-        }
-    }
-
-    private void RestoreMaterials()
-    {
-        if (renderers == null) return;
-
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            if (renderers[i] != null)
-            {
-                renderers[i].sharedMaterials = originalMaterials[i];
-            }
-        }
     }
 }

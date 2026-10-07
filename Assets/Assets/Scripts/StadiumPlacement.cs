@@ -1,25 +1,22 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+
 public class StadiumPlacement : MonoBehaviour
 {
     [Header("Sockets del estadio")]
-    [Tooltip("Socket del primer Pokémon escaneado (el del jugador)")]
     [SerializeField] private Transform playerSocket;
-    [Tooltip("Socket del segundo Pokémon escaneado (el rival)")]
     [SerializeField] private Transform enemySocket;
 
     [Header("Toque")]
-    [Tooltip("Cámara AR. Si se deja vacío usa Camera.main")]
     [SerializeField] private Camera arCamera;
     [SerializeField] private LayerMask tapMask = ~0;
     [SerializeField] private float maxTapDistance = 20f;
 
     [Header("Efecto (segundos)")]
-    [Tooltip("Duración de rojo + encogerse en la carta")]
     [SerializeField] private float disappearDuration = 0.8f;
-    [Tooltip("Duración de crecer + volver al color en el socket")]
     [SerializeField] private float appearDuration = 0.8f;
 
     private readonly Dictionary<string, GameObject> _cards = new Dictionary<string, GameObject>();
@@ -29,6 +26,12 @@ public class StadiumPlacement : MonoBehaviour
     private readonly HashSet<string> _movingCards = new HashSet<string>();
     private readonly HashSet<string> _placedCards = new HashSet<string>();
 
+    public bool BothPlaced => _placedCards.Count >= 2;
+
+    public event Action OnBothPlaced;
+
+    public event Action<string, GameObject> OnCardChosen;
+
 
     public void RegisterCard(string cardName, GameObject cardObject)
     {
@@ -36,9 +39,6 @@ public class StadiumPlacement : MonoBehaviour
             return;
 
         _cards[cardName] = cardObject;
-
-        if (!_socketIndex.ContainsKey(cardName) && _socketIndex.Count < 2)
-            _socketIndex[cardName] = _socketIndex.Count;
     }
 
     public bool IsLocked(string cardName)
@@ -97,15 +97,16 @@ public class StadiumPlacement : MonoBehaviour
 
     private void SendToSocket(string cardName, GameObject cardObject)
     {
-        if (IsLocked(cardName))
+        if (IsLocked(cardName) || _socketIndex.ContainsKey(cardName))
             return;
 
-        if (!_socketIndex.TryGetValue(cardName, out int index))
+        if (_socketIndex.Count >= 2)
         {
-            Debug.LogWarning($"'{cardName}' no tiene socket asignado (solo hay 2).");
+            Debug.LogWarning($"'{cardName}' no tiene socket disponible (solo hay 2).");
             return;
         }
 
+        int index = _socketIndex.Count;
         Transform socket = index == 0 ? playerSocket : enemySocket;
 
         if (socket == null)
@@ -113,6 +114,9 @@ public class StadiumPlacement : MonoBehaviour
             Debug.LogWarning($"Falta asignar el socket {(index == 0 ? "del jugador" : "del rival")}.");
             return;
         }
+
+        _socketIndex[cardName] = index;
+        OnCardChosen?.Invoke(cardName, cardObject);
 
         StartCoroutine(MoveToSocketRoutine(cardName, cardObject, socket));
     }
@@ -175,6 +179,9 @@ public class StadiumPlacement : MonoBehaviour
 
         _movingCards.Remove(cardName);
         _placedCards.Add(cardName);
+
+        if (BothPlaced)
+            OnBothPlaced?.Invoke();
     }
 
     private float SafeScale(float value)

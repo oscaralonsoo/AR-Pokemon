@@ -159,7 +159,6 @@ public class PokemonCapture : MonoBehaviour
         IsBeingCaptured = false;
         IsCaptured = true;
         HideVisuals();
-        Debug.Log($"{PokemonName} capturado");
         onCaptured?.Invoke();
     }
 
