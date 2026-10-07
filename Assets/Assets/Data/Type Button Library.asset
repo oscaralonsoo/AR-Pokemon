@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c40b5ebea3e21149a8f34b64b483e47, type: 3}
+  m_Name: Type Button Library
+  m_EditorClassIdentifier: Assembly-CSharp::TypeButtonLibrary
+  entries:
+  - type: 2
+    normal: {fileID: 21300000, guid: 2353cd2f06b9f634ea22da6ff8d02b26, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 9
+    normal: {fileID: 21300000, guid: 3a2e9f1753706f047bf19625b27a3036, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 4
+    normal: {fileID: 21300000, guid: 7827c9e598adfc04796a870d6267cf4b, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 1
+    normal: {fileID: 21300000, guid: c72b9617ae3116c46b9842ae6d4ad161, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 0
+    normal: {fileID: 21300000, guid: 7ffb641d3450bfb499aea66177c1741c, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 6
+    normal: {fileID: 21300000, guid: 2ddd51f6f50fadd44af41cce4681ece7, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 8
+    normal: {fileID: 21300000, guid: b6c7bc5926f7f594688d1a2854f22e5b, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 7
+    normal: {fileID: 21300000, guid: ff23d9728f3ae194aab0716ae8abeb58, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 3
+    normal: {fileID: 21300000, guid: afe924928f1511247ab119ef1708ba62, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 5
+    normal: {fileID: 21300000, guid: cae7ae5105d01284d91369d747e5a741, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 10
+    normal: {fileID: 21300000, guid: 2c23d2eb2fee2b941b5509afc3ede34e, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  - type: 11
+    normal: {fileID: 21300000, guid: 7ffb641d3450bfb499aea66177c1741c, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
+  fallback:
+    type: 0
+    normal: {fileID: 0}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}

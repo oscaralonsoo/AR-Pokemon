@@ -2,12 +2,20 @@
   "pokemon": [
     {
       "name": "Lapras",
-      "hp": 130,
+      "hp": 210,
       "type": "Water",
       "stage": "Basic",
       "attacks": [
-        { "name": "Hidro Giro", "damage": 60 },
-        { "name": "Surf", "damage": 90 }
+        {
+          "name": "Hidro Giro",
+          "type": "Water",
+          "damage": 30
+        },
+        {
+          "name": "Surf",
+          "type": "Water",
+          "damage": 140
+        }
       ],
       "weakness": {
         "type": "Lightning",
@@ -17,12 +25,20 @@
     },
     {
       "name": "Houndoom",
-      "hp": 75,
+      "hp": 120,
       "type": "Fire",
       "stage": "Basic",
       "attacks": [
-        { "name": "Colmillo Afilado", "damage": 70 },
-        { "name": "Llamarada", "damage": 110 }
+        {
+          "name": "Colmillo Afilado",
+          "type": "Dark",
+          "damage": 30
+        },
+        {
+          "name": "Llamarada",
+          "type": "Fire",
+          "damage": 150
+        }
       ],
       "weakness": {
         "type": "Water",
@@ -35,12 +51,20 @@
     },
     {
       "name": "Lucario",
-      "hp": 70,
+      "hp": 210,
       "type": "Fighting",
       "stage": "Basic",
       "attacks": [
-        { "name": "Esfera Aural", "damage": 80 },
-        { "name": "Golpe Aplastante", "damage": 80 }
+        {
+          "name": "Esfera Aural",
+          "type": "Fighting",
+          "damage": 40
+        },
+        {
+          "name": "Golpe Aplastante",
+          "type": "Fighting",
+          "damage": 180
+        }
       ],
       "weakness": {
         "type": "Fire",
@@ -53,12 +77,20 @@
     },
     {
       "name": "Jolteon",
-      "hp": 65,
+      "hp": 110,
       "type": "Lightning",
       "stage": "Basic",
       "attacks": [
-        { "name": "Ataque Lineal", "damage": 60 },
-        { "name": "Relámpago de Lucha", "damage": 90 }
+        {
+          "name": "Ataque Lineal",
+          "type": "Normal",
+          "damage": 30
+        },
+        {
+          "name": "Relámpago de Lucha",
+          "type": "Lightning",
+          "damage": 90
+        }
       ],
       "weakness": {
         "type": "Fighting",
@@ -71,12 +103,20 @@
     },
     {
       "name": "Alakazam",
-      "hp": 55,
+      "hp": 210,
       "type": "Psychic",
       "stage": "Basic",
       "attacks": [
-        { "name": "Secuestro Mental", "damage": 65 },
-        { "name": "Mano Dimensional", "damage": 85 }
+        {
+          "name": "Secuestro Mental",
+          "type": "Psychic",
+          "damage": 90
+        },
+        {
+          "name": "Mano Dimensional",
+          "type": "Psychic",
+          "damage": 120
+        }
       ],
       "weakness": {
         "type": "Dark",
@@ -89,12 +129,20 @@
     },
     {
       "name": "Pyroar",
-      "hp": 86,
+      "hp": 120,
       "type": "Fire",
       "stage": "Basic",
       "attacks": [
-        { "name": "Nitrocarga", "damage": 50 },
-        { "name": "Calcinación", "damage": 60 }
+        {
+          "name": "Nitrocarga",
+          "type": "Fire",
+          "damage": 60
+        },
+        {
+          "name": "Calcinación",
+          "type": "Fire",
+          "damage": 90
+        }
       ],
       "weakness": {
         "type": "Water",

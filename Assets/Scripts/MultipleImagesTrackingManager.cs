@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
@@ -10,10 +11,15 @@ public class MultipleImagesTrackingManager : MonoBehaviour
 
     [SerializeField] private StadiumPlacement stadium;
 
+    [Header("Reset")]
+    [SerializeField] private float resetEffectDuration = 0.8f;
+
     private ARTrackedImageManager _trackedImageManager;
 
     private Dictionary<string, GameObject> _arObjects;
     private HashSet<string> _registeredCards;
+
+    private bool _resetting;
 
     private void Start()
     {
@@ -66,7 +72,7 @@ public class MultipleImagesTrackingManager : MonoBehaviour
 
     private void UpdateTrackedImage(ARTrackedImage trackedImage)
     {
-        if (trackedImage == null)
+        if (_resetting || trackedImage == null)
             return;
 
         string imageName = trackedImage.referenceImage.name;
@@ -104,6 +110,35 @@ public class MultipleImagesTrackingManager : MonoBehaviour
 
     public void ResetCards()
     {
+        if (_resetting || _arObjects == null)
+            return;
+
+        StartCoroutine(ResetRoutine());
+    }
+
+    private IEnumerator ResetRoutine()
+    {
+        _resetting = true;
+
+        var effects = new List<PokemonCapture>();
+        foreach (var obj in _arObjects.Values)
+        {
+            if (obj == null || !obj.activeInHierarchy) continue;
+
+            foreach (var p in obj.GetComponentsInChildren<PokemonCapture>(false))
+            {
+                if (p == null || p.IsCaptured || p.IsBeingCaptured) continue;
+                effects.Add(p);
+            }
+        }
+
+        yield return new WaitUntil(() => effects.TrueForAll(p => p == null || !p.IsPlayingEffect));
+
+        foreach (var p in effects)
+            if (p != null) p.PlayDisappear(resetEffectDuration);
+
+        yield return new WaitUntil(() => effects.TrueForAll(p => p == null || !p.IsPlayingEffect));
+
         _registeredCards.Clear();
 
         if (stadium != null)
@@ -118,5 +153,7 @@ public class MultipleImagesTrackingManager : MonoBehaviour
         _arObjects.Clear();
 
         SetupSceneElements();
+
+        _resetting = false;
     }
 }
