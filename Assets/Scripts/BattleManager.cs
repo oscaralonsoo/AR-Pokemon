@@ -565,10 +565,18 @@ public class BattleManager : MonoBehaviour
         if (!hasAttack)
             return;
 
-        SetButtonLabel(button, tmpLabel, playerPokemon.attacks[attackIndex].name);
+        Move move = playerPokemon.attacks[attackIndex];
+
+        SetButtonLabel(button, tmpLabel, move.name);
 
         if (style != null)
-            style.ApplyType(TypeButtonLibrary.Parse(playerPokemon.type));
+        {
+            // Tipo propio del ataque; si el JSON no lo trae, se usa el del Pokémon
+            string attackType = string.IsNullOrEmpty(move.type) ? playerPokemon.type : move.type;
+
+            style.SetDamage(move.damage);
+            style.ApplyType(TypeButtonLibrary.Parse(attackType));
+        }
 
         button.interactable =
             currentState == BattleState.PlayerTurn &&
@@ -601,6 +609,9 @@ public class BattleManager : MonoBehaviour
     public void ResetBattle()
     {
         StopAllCoroutines();
+
+        // No se hace Rebind del Animator: el Pokémon que queda debe conservar su pose
+        // para que la animación de reset (rojo + encoger) se vea continua.
 
         playerPokemon = null;
         enemyPokemon = null;
@@ -654,6 +665,7 @@ public class Pokemon
 public class Move
 {
     public string name;
+    public string type;
     public int damage;
 }
 

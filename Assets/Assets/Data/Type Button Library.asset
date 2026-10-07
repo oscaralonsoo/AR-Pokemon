@@ -68,6 +68,11 @@ MonoBehaviour:
     highlighted: {fileID: 0}
     pressed: {fileID: 0}
     disabled: {fileID: 0}
+  - type: 11
+    normal: {fileID: 21300000, guid: 7ffb641d3450bfb499aea66177c1741c, type: 3}
+    highlighted: {fileID: 0}
+    pressed: {fileID: 0}
+    disabled: {fileID: 0}
   fallback:
     type: 0
     normal: {fileID: 0}

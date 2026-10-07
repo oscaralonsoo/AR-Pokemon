@@ -7,9 +7,9 @@ using TMPro;
 public class AttackButtonUI : MonoBehaviour
 {
     [SerializeField] private TypeButtonLibrary library;
-    [SerializeField] private Image background;
-    [SerializeField] private TMP_Text nameText;     
-    [SerializeField] private TMP_Text damageText;   
+    [SerializeField] private Image background;      // el Image del botón (Target Graphic)
+    [SerializeField] private TMP_Text nameText;     // opcional
+    [SerializeField] private TMP_Text damageText;   // opcional
 
     private Button button;
 
@@ -40,6 +40,12 @@ public class AttackButtonUI : MonoBehaviour
         }
     }
 
+    public void SetDamage(int damage)
+    {
+        if (damageText != null)
+            damageText.text = damage.ToString();
+    }
+
     public void ApplyType(PokemonType type)
     {
         Init();
@@ -49,6 +55,7 @@ public class AttackButtonUI : MonoBehaviour
 
         background.sprite = entry.normal;
 
+        // Para que pressed/highlighted/disabled también cambien según el tipo
         button.targetGraphic = background;
         button.transition = Selectable.Transition.SpriteSwap;
         button.spriteState = new SpriteState
