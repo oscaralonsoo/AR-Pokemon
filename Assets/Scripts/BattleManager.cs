@@ -37,6 +37,10 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private Button attackButton1;
     [SerializeField] private Button attackButton2;
 
+    [Header("Estilo por tipo (AttackButtonUI de cada botón)")]
+    [SerializeField] private AttackButtonUI attackButton1Style;
+    [SerializeField] private AttackButtonUI attackButton2Style;
+
     [Header("Textos de los botones (TextMeshPro)")]
     [SerializeField] private TMP_Text attackButton1TMP;
     [SerializeField] private TMP_Text attackButton2TMP;
@@ -113,6 +117,7 @@ public class BattleManager : MonoBehaviour
         currentState = BattleState.WaitingForPlayer;
         UpdateBattleUI();
     }
+
     private void HandleCardChosen(string cardName, GameObject cardObject)
     {
         RegisterCard(cardName, cardObject);
@@ -266,6 +271,7 @@ public class BattleManager : MonoBehaviour
 
         return cardObject.GetComponentInChildren<PokemonCapture>(true);
     }
+
     private void SetupHealthBar(WorldHealthBar bar, Pokemon pokemon, int currentHP)
     {
         if (bar == null)
@@ -299,18 +305,6 @@ public class BattleManager : MonoBehaviour
     private string GetAttackTrigger(int moveIndex)
     {
         return moveIndex == 0 ? TriggerAttack : TriggerAttack2;
-    }
-
-    private void ResetAnimator(Animator animator)
-    {
-        if (animator == null)
-            return;
-
-        animator.ResetTrigger(TriggerAttack);
-        animator.ResetTrigger(TriggerAttack2);
-        animator.ResetTrigger(TriggerDamage);
-        animator.ResetTrigger(TriggerDeath);
-        animator.Rebind();
     }
 
     private void StartBattle()
@@ -424,6 +418,7 @@ public class BattleManager : MonoBehaviour
             EndBattle(playerIsAttacker);
             yield break;
         }
+
         if (damage > 0)
             PlayTrigger(defenderAnimator, TriggerDamage);
 
@@ -545,14 +540,14 @@ public class BattleManager : MonoBehaviour
                 ? $"HP: {enemyCurrentHP}/{enemyPokemon.hp}"
                 : "";
 
-        SetupAttackButton(attackButton1, attackButton1TMP, 0);
-        SetupAttackButton(attackButton2, attackButton2TMP, 1);
+        SetupAttackButton(attackButton1, attackButton1TMP, attackButton1Style, 0);
+        SetupAttackButton(attackButton2, attackButton2TMP, attackButton2Style, 1);
 
         if (resetButton != null)
             resetButton.gameObject.SetActive(currentState == BattleState.BattleOver);
     }
 
-    private void SetupAttackButton(Button button, TMP_Text tmpLabel, int attackIndex)
+    private void SetupAttackButton(Button button, TMP_Text tmpLabel, AttackButtonUI style, int attackIndex)
     {
         if (button == null)
             return;
@@ -572,11 +567,15 @@ public class BattleManager : MonoBehaviour
 
         SetButtonLabel(button, tmpLabel, playerPokemon.attacks[attackIndex].name);
 
+        if (style != null)
+            style.ApplyType(TypeButtonLibrary.Parse(playerPokemon.type));
+
         button.interactable =
             currentState == BattleState.PlayerTurn &&
             enemyPokemon != null &&
             PokemonOnField;
     }
+
     private void SetButtonLabel(Button button, TMP_Text tmpLabel, string label)
     {
         if (tmpLabel == null)
@@ -602,9 +601,6 @@ public class BattleManager : MonoBehaviour
     public void ResetBattle()
     {
         StopAllCoroutines();
-
-        ResetAnimator(playerAnimator);
-        ResetAnimator(enemyAnimator);
 
         playerPokemon = null;
         enemyPokemon = null;
