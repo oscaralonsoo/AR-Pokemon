@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class BattleManager : MonoBehaviour
@@ -46,7 +47,9 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private TMP_Text attackButton2TMP;
 
     [Header("Reinicio")]
-    [SerializeField] private Button resetButton;
+    [FormerlySerializedAs("resetButton")]
+    [SerializeField] private Button resetButtonMoves;
+    [SerializeField] private Button resetButtonBag;
     [SerializeField] private MultipleImagesTrackingManager trackingManager;
 
     [Header("Estadio")]
@@ -90,8 +93,11 @@ public class BattleManager : MonoBehaviour
         if (attackButton2 != null)
             attackButton2.onClick.AddListener(() => PlayerAttack(1));
 
-        if (resetButton != null)
-            resetButton.onClick.AddListener(ResetBattle);
+        if (resetButtonMoves != null)
+            resetButtonMoves.onClick.AddListener(ResetBattle);
+
+        if (resetButtonBag != null)
+            resetButtonBag.onClick.AddListener(ResetBattle);
     }
 
     private void OnEnable()
@@ -542,9 +548,11 @@ public class BattleManager : MonoBehaviour
 
         SetupAttackButton(attackButton1, attackButton1TMP, attackButton1Style, 0);
         SetupAttackButton(attackButton2, attackButton2TMP, attackButton2Style, 1);
+        if (resetButtonMoves != null)
+            resetButtonMoves.gameObject.SetActive(true);
 
-        if (resetButton != null)
-            resetButton.gameObject.SetActive(currentState == BattleState.BattleOver);
+        if (resetButtonBag != null)
+            resetButtonBag.gameObject.SetActive(true);
     }
 
     private void SetupAttackButton(Button button, TMP_Text tmpLabel, AttackButtonUI style, int attackIndex)
@@ -571,7 +579,6 @@ public class BattleManager : MonoBehaviour
 
         if (style != null)
         {
-            // Tipo propio del ataque; si el JSON no lo trae, se usa el del Pokémon
             string attackType = string.IsNullOrEmpty(move.type) ? playerPokemon.type : move.type;
 
             style.SetDamage(move.damage);
@@ -609,9 +616,6 @@ public class BattleManager : MonoBehaviour
     public void ResetBattle()
     {
         StopAllCoroutines();
-
-        // No se hace Rebind del Animator: el Pokémon que queda debe conservar su pose
-        // para que la animación de reset (rojo + encoger) se vea continua.
 
         playerPokemon = null;
         enemyPokemon = null;
